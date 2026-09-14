@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VINCETIGO | Property Management & Asset Portal</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            obsidian: '#090a0f',
+            surface: '#11131a',
+            surfaceBorder: '#1e2230',
+            accentGlow: '#6366f1'
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    html { scroll-behavior: smooth; }
+  </style>
+</head>
+<body class="bg-obsidian text-zinc-100 font-sans antialiased min-h-screen flex flex-col selection:bg-indigo-500 selection:text-white">
+
+  <!-- ================= VINCETIGO DARK NAVBAR ================= -->
+  <header class="bg-surface/80 backdrop-blur-md border-b border-surfaceBorder sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-3 cursor-pointer" onclick="switchView('public')">
+        <div class="w-9 h-9 bg-indigo-600 rounded-lg flex items-center justify-center text-white shadow-lg shadow-indigo-600/30">
+          <i data-lucide="shield" class="w-5 h-5"></i>
+        </div>
+        <span class="text-xl font-black tracking-wider uppercase text-white">VINCETIGO</span>
+      </div>
+
+      <nav class="hidden md:flex items-center space-x-8 text-sm font-medium text-zinc-400">
+        <a href="#properties" onclick="switchView('public')" class="hover:text-indigo-400 transition tracking-wide">Portfolio</a>
+        <a href="#about" onclick="switchView('public')" class="hover:text-indigo-400 transition tracking-wide">Leadership</a>
+        <a href="#contact" onclick="switchView('public')" class="hover:text-indigo-400 transition tracking-wide">Contact</a>
+      </nav>
+
+      <div class="flex items-center space-x-3">
+        <button id="portal-toggle-btn" onclick="togglePortal()" class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold uppercase tracking-wider px-4 py-2 rounded-lg transition shadow-lg shadow-indigo-600/20">
+          <i data-lucide="key-round" class="w-4 h-4"></i>
+          <span id="portal-btn-text">Resident Portal</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= VIEW 1: PUBLIC REAL ESTATE SITE ================= -->
+  <main id="view-public" class="flex-grow">
+    <!-- Hero Section -->
+    <section class="relative py-28 px-4 sm:px-6 lg:px-8 overflow-hidden border-b border-surfaceBorder bg-radial from-surface to-obsidian">
+      <div class="absolute inset-0 opacity-15 bg-[radial-gradient(#6366f1_1px,transparent_1px)] [background-size:24px_24px]"></div>
+      <div class="relative max-w-4xl mx-auto text-center space-y-6">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-indigo-950/60 text-indigo-400 border border-indigo-500/30">
+          <span class="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span>
+          Philadelphia Urban Property Holdings
+        </div>
+        <h1 class="text-4xl sm:text-6xl font-black tracking-tight text-white leading-tight">
+          Disciplined management. <br/><span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-300 to-indigo-200">Uncompromising standards.</span>
+        </h1>
+        <p class="text-base sm:text-lg text-zinc-400 max-w-2xl mx-auto leading-relaxed">
+          Streamlined resident portals, rapid dispatch maintenance infrastructure, and curated living spaces across Center City and Greater Philadelphia.
+        </p>
+        <div class="pt-4 flex flex-col sm:flex-row justify-center gap-4">
+          <a href="#properties" class="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm px-6 py-3 rounded-lg shadow-lg shadow-indigo-600/20 transition">
+            View Current Holdings
+          </a>
+          <button onclick="togglePortal()" class="bg-surface hover:bg-zinc-800 text-zinc-200 border border-surfaceBorder font-semibold text-sm px-6 py-3 rounded-lg transition">
+            Resident Access
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Properties Grid -->
+    <section id="properties" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+      <div class="flex items-center justify-between mb-10">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-widest text-indigo-400">Holdings</span>
+          <h2 class="text-2xl font-black text-white mt-1">Featured Residences</h2>
+        </div>
+        <span class="text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-indigo-400 cursor-pointer transition">Browse All Units &rarr;</span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Property 1 -->
+        <div class="bg-surface rounded-xl border border-surfaceBorder overflow-hidden group hover:border-indigo-500/40 transition duration-300">
+          <div class="h-52 relative overflow-hidden">
+            <img src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=600&q=80" alt="Apartment" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+            <div class="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-transparent"></div>
+            <span class="absolute top-3 right-3 bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-semibold px-2.5 py-0.5 rounded">Active Lease</span>
+          </div>
+          <div class="p-6 space-y-3">
+            <div class="flex justify-between items-baseline">
+              <h3 class="font-bold text-lg text-white">The Spruce Townhouse</h3>
+              <span class="text-indigo-400 font-bold">$2,250<span class="text-zinc-500 text-xs font-normal">/mo</span></span>
+            </div>
+            <p class="text-zinc-400 text-xs flex items-center gap-1.5">
+              <i data-lucide="map-pin" class="w-3.5 h-3.5 text-indigo-400"></i> Center City, Philadelphia, PA
+            </p>
+            <div class="pt-4 border-t border-surfaceBorder flex justify-between text-xs text-zinc-400">
+              <span>2 Bed</span> • <span>2 Bath</span> • <span>1,150 sq ft</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Property 2 -->
+        <div class="bg-surface rounded-xl border border-surfaceBorder overflow-hidden group hover:border-indigo-500/40 transition duration-300">
+          <div class="h-52 relative overflow-hidden">
+            <img src="https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=600&q=80" alt="Loft" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+            <div class="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-transparent"></div>
+            <span class="absolute top-3 right-3 bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-semibold px-2.5 py-0.5 rounded">Active Lease</span>
+          </div>
+          <div class="p-6 space-y-3">
+            <div class="flex justify-between items-baseline">
+              <h3 class="font-bold text-lg text-white">Fishtown Modern Loft</h3>
+              <span class="text-indigo-400 font-bold">$1,850<span class="text-zinc-500 text-xs font-normal">/mo</span></span>
+            </div>
+            <p class="text-zinc-400 text-xs flex items-center gap-1.5">
+              <i data-lucide="map-pin" class="w-3.5 h-3.5 text-indigo-400"></i> Fishtown, Philadelphia, PA
+            </p>
+            <div class="pt-4 border-t border-surfaceBorder flex justify-between text-xs text-zinc-400">
+              <span>1 Bed</span> • <span>1 Bath</span> • <span>820 sq ft</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Property 3 -->
+        <div class="bg-surface rounded-xl border border-surfaceBorder overflow-hidden group hover:border-indigo-500/40 transition duration-300">
+          <div class="h-52 relative overflow-hidden">
+            <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=600&q=80" alt="Home" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+            <div class="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-transparent"></div>
+            <span class="absolute top-3 right-3 bg-zinc-800 text-zinc-300 border border-zinc-700 text-xs font-semibold px-2.5 py-0.5 rounded">Pending Acquisition</span>
+          </div>
+          <div class="p-6 space-y-3">
+            <div class="flex justify-between items-baseline">
+              <h3 class="font-bold text-lg text-white">Fairmount Contemporary</h3>
+              <span class="text-indigo-400 font-bold">$2,600<span class="text-zinc-500 text-xs font-normal">/mo</span></span>
+            </div>
+            <p class="text-zinc-400 text-xs flex items-center gap-1.5">
+              <i data-lucide="map-pin" class="w-3.5 h-3.5 text-indigo-400"></i> Fairmount, Philadelphia, PA
+            </p>
+            <div class="pt-4 border-t border-surfaceBorder flex justify-between text-xs text-zinc-400">
+              <span>3 Bed</span> • <span>2.5 Bath</span> • <span>1,400 sq ft</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= FOUNDER & LEADERSHIP SECTION ================= -->
+    <section id="about" class="py-20 border-t border-surfaceBorder bg-surface/40">
+      <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="bg-surface rounded-2xl border border-surfaceBorder p-8 sm:p-12 shadow-2xl relative overflow-hidden">
+          <div class="absolute -top-32 -right-32 w-64 h-64 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none"></div>
+
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-10 items-center">
+            
+            <!-- Headshot Portrait (Square Crop on Head) -->
+            <div class="md:col-span-4 flex flex-col items-center">
+              <div class="w-56 h-56 sm:w-60 sm:h-60 rounded-2xl overflow-hidden ring-2 ring-indigo-500/30 shadow-2xl bg-zinc-900 relative">
+                <img 
+                  src="file:///Users/ben/Desktop/untitled%20folder/headshot.jpg" 
+                  alt="Ben Kastner - Founder & CEO" 
+                  class="w-full h-full object-cover object-[50%_15%]"
+                />
+              </div>
+              <span class="mt-4 text-[11px] font-bold tracking-widest uppercase text-zinc-500">Executive Leadership</span>
+            </div>
+
+            <!-- Founder Bio & Direct Contact -->
+            <div class="md:col-span-8 space-y-5">
+              <div>
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 mb-3">
+                  <i data-lucide="award" class="w-3.5 h-3.5"></i> Founder & CEO
+                </span>
+                <h2 class="text-3xl font-extrabold text-white tracking-tight">Ben Kastner</h2>
+                <p class="text-sm font-medium text-zinc-400">Principal Operator, Vincetigo Holdings</p>
+              </div>
+
+              <div class="space-y-3 text-zinc-300 text-sm leading-relaxed">
+                <p>
+                  Ben enlisted in the Army at 17 years old and served for 6 years, traveling to Germany and living stationed overseas in South Korea. During his active-duty service, he demonstrated disciplined operational commitment while simultaneously completing his Bachelor’s degree.
+                </p>
+                <p>
+                  Following his military career, Ben relocated to Philadelphia for school and immediately fell in love with the city's architectural character and community. He is currently pursuing a Part-Time MBA at the NYU Stern School of Business and preparing for future law school studies (JD), applying structured executive leadership and asset management precision to Vincetigo.
+                </p>
+              </div>
+
+              <!-- Direct Contact Badges -->
+              <div id="contact" class="pt-4 border-t border-surfaceBorder flex flex-wrap gap-4 items-center">
+                <a href="tel:2676552267" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-obsidian border border-surfaceBorder text-xs font-semibold text-zinc-200 hover:border-indigo-500 hover:text-indigo-400 transition shadow-sm">
+                  <i data-lucide="phone" class="w-3.5 h-3.5 text-indigo-400"></i>
+                  Cell: 267-655-2267
+                </a>
+                <a href="mailto:ben@vincetigo.com" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-obsidian border border-surfaceBorder text-xs font-semibold text-zinc-200 hover:border-indigo-500 hover:text-indigo-400 transition shadow-sm">
+                  <i data-lucide="mail" class="w-3.5 h-3.5 text-indigo-400"></i>
+                  ben@vincetigo.com
+                </a>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ================= VIEW 2: TENANT DASHBOARD PORTAL (DARK) ================= -->
+  <main id="view-portal" class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 w-full hidden">
+    <!-- Portal Header -->
+    <div class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div>
+        <span class="text-xs font-bold uppercase tracking-widest text-indigo-400">Secure Resident Interface</span>
+        <h1 class="text-2xl font-black text-white mt-0.5">Asset & Payment Portal</h1>
+        <p class="text-xs text-zinc-400">Unit 3B • 1420 Pine Street, Center City, Philadelphia</p>
+      </div>
+      <div class="flex gap-2">
+        <button onclick="switchTab('payment-tab')" id="tab-btn-payment" class="px-4 py-2 text-xs font-bold uppercase tracking-wider rounded-lg bg-indigo-600 text-white shadow-lg shadow-indigo-600/20 transition">
+          Billing & Transfers
+        </button>
+        <button onclick="switchTab('maintenance-tab')" id="tab-btn-maintenance" class="px-4 py-2 text-xs font-bold uppercase tracking-wider rounded-lg bg-surface text-zinc-300 border border-surfaceBorder hover:bg-zinc-800 transition">
+          Maintenance Operations
+        </button>
+      </div>
+    </div>
+
+    <!-- TAB 1: PAYMENTS & BILLING -->
+    <section id="payment-tab" class="tab-content active space-y-6">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="md:col-span-2 bg-surface rounded-xl border border-surfaceBorder p-6 shadow-xl flex flex-col justify-between">
+          <div class="space-y-1">
+            <span class="text-xs font-bold uppercase tracking-wider text-zinc-400">Monthly Balance Due</span>
+            <div class="text-4xl font-black text-white tracking-tight" id="portal-balance">$2,150.00</div>
+            <p class="text-xs text-amber-400 flex items-center gap-1.5 pt-1">
+              <i data-lucide="clock" class="w-3.5 h-3.5"></i> Standard due date on the 1st of the month
+            </p>
+          </div>
+
+          <div class="pt-6 border-t border-surfaceBorder flex flex-wrap gap-3 items-center">
+            <button onclick="triggerStripeCheckout()" class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider shadow-lg shadow-indigo-600/20 transition">
+              <i data-lucide="credit-card" class="w-4 h-4"></i>
+              Pay Balance (Stripe Gateway)
+            </button>
+            <button onclick="triggerPlaidLink()" id="plaid-btn" class="inline-flex items-center gap-2 bg-obsidian hover:bg-zinc-900 text-zinc-200 border border-surfaceBorder px-4 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider transition">
+              <i data-lucide="landmark" class="w-4 h-4 text-indigo-400"></i>
+              <span id="plaid-status-text">Link Bank (Plaid ACH)</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="bg-surface rounded-xl border border-surfaceBorder p-6 flex flex-col justify-between relative overflow-hidden">
+          <div class="absolute -top-12 -right-12 w-28 h-28 bg-indigo-600/10 rounded-full blur-2xl"></div>
+          <div>
+            <div class="w-8 h-8 rounded-lg bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 flex items-center justify-center mb-3">
+              <i data-lucide="zap" class="w-4 h-4"></i>
+            </div>
+            <h3 class="font-bold text-white text-sm">Automated Settlement</h3>
+            <p class="text-xs text-zinc-400 mt-1 leading-relaxed">
+              Enable automated direct debits via Plaid Auth and Stripe to maintain perfect ledger standing.
+            </p>
+          </div>
+          <div class="pt-4">
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" class="sr-only peer" onchange="toggleAutopay(this)">
+              <div class="w-11 h-6 bg-zinc-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+              <span class="ml-3 text-xs font-semibold text-zinc-400" id="autopay-label">Autopay Off</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Payment Ledger -->
+      <div class="bg-surface rounded-xl border border-surfaceBorder shadow-xl overflow-hidden">
+        <div class="p-5 border-b border-surfaceBorder flex justify-between items-center">
+          <h2 class="font-bold text-white text-sm">Verified Transaction Ledger</h2>
+          <span class="text-xs text-zinc-400">Audited via Stripe ACH</span>
+        </div>
+        <div class="divide-y divide-surfaceBorder text-sm">
+          <div class="p-4 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-full bg-emerald-950/60 border border-emerald-500/30 text-emerald-400 flex items-center justify-center">
+                <i data-lucide="check" class="w-4 h-4"></i>
+              </div>
+              <div>
+                <p class="font-medium text-white">Monthly Rent - Settled</p>
+                <p class="text-xs text-zinc-400">Aug 1, 2026 • Plaid Auth (Chase ...4821)</p>
+              </div>
+            </div>
+            <div class="text-right">
+              <p class="font-semibold text-white">$2,150.00</p>
+              <span class="text-xs text-emerald-400 font-mono">REC-8841</span>
+            </div>
+          </div>
+          <div class="p-4 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-full bg-emerald-950/60 border border-emerald-500/30 text-emerald-400 flex items-center justify-center">
+                <i data-lucide="check" class="w-4 h-4"></i>
+              </div>
+              <div>
+                <p class="font-medium text-white">Monthly Rent - Settled</p>
+                <p class="text-xs text-zinc-400">Jul 1, 2026 • Plaid Auth (Chase ...4821)</p>
+              </div>
+            </div>
+            <div class="text-right">
+              <p class="font-semibold text-white">$2,150.00</p>
+              <span class="text-xs text-emerald-400 font-mono">REC-7210</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: MAINTENANCE REQUEST TRACKER -->
+    <section id="maintenance-tab" class="tab-content space-y-6">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="bg-surface rounded-xl border border-surfaceBorder p-6 shadow-xl">
+          <h2 class="font-bold text-white text-sm mb-1">Log Maintenance Incident</h2>
+          <p class="text-xs text-zinc-400 mb-4">Direct dispatch to property operations and contractors.</p>
+
+          <form id="maintenance-form" onsubmit="handleTicketSubmit(event)" class="space-y-4">
+            <div>
+              <label class="block text-xs font-semibold text-zinc-300 mb-1">Category</label>
+              <select id="ticket-category" class="w-full text-xs border border-surfaceBorder rounded-lg p-2.5 bg-obsidian text-zinc-200 focus:border-indigo-500 focus:outline-none">
+                <option value="Plumbing">Plumbing (Leak, Toilet, Water)</option>
+                <option value="HVAC / Climate">HVAC / Heating / Cooling</option>
+                <option value="Electrical">Electrical / Lighting</option>
+                <option value="Appliance">Kitchen Appliance</option>
+                <option value="Structural">Doors / Windows / Hardware</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-zinc-300 mb-1">Priority</label>
+              <select id="ticket-priority" class="w-full text-xs border border-surfaceBorder rounded-lg p-2.5 bg-obsidian text-zinc-200 focus:border-indigo-500 focus:outline-none">
+                <option value="Standard" selected>Standard Priority</option>
+                <option value="Urgent">Urgent (Water / Electrical / No Heat)</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-zinc-300 mb-1">Subject</label>
+              <input id="ticket-title" type="text" placeholder="e.g. Master bath faucet dripping" required class="w-full text-xs border border-surfaceBorder rounded-lg p-2.5 bg-obsidian text-zinc-200 placeholder-zinc-600 focus:border-indigo-500 focus:outline-none">
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-zinc-300 mb-1">Incident Details</label>
+              <textarea id="ticket-desc" rows="3" placeholder="Describe issue and unit entry permission..." required class="w-full text-xs border border-surfaceBorder rounded-lg p-2.5 bg-obsidian text-zinc-200 placeholder-zinc-600 focus:border-indigo-500 focus:outline-none"></textarea>
+            </div>
+
+            <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold uppercase tracking-wider py-2.5 rounded-lg text-xs shadow-lg shadow-indigo-600/20 transition">
+              Dispatch Request
+            </button>
+          </form>
+        </div>
+
+        <div class="lg:col-span-2 bg-surface rounded-xl border border-surfaceBorder shadow-xl flex flex-col">
+          <div class="p-5 border-b border-surfaceBorder flex justify-between items-center">
+            <div>
+              <h2 class="font-bold text-white text-sm">Active Incident Tickets</h2>
+              <p class="text-xs text-zinc-400">Live operational dispatch status</p>
+            </div>
+            <span id="ticket-count" class="bg-indigo-950/80 border border-indigo-500/30 text-indigo-400 text-xs font-bold px-2.5 py-1 rounded-full">2 Active</span>
+          </div>
+
+          <div id="tickets-container" class="divide-y divide-surfaceBorder p-2 overflow-y-auto max-h-[500px]">
+            <!-- Dynamic Tickets Loaded Here -->
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ================= FOOTER ================= -->
+  <footer class="bg-surface border-t border-surfaceBorder mt-auto py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between text-xs text-zinc-500 gap-4">
+      <div class="flex items-center space-x-2">
+        <span class="font-bold tracking-wider uppercase text-zinc-300">VINCETIGO HOLDINGS</span>
+        <span>•</span>
+        <span>&copy; 2026 Ben Kastner. All rights reserved.</span>
+      </div>
+      <div class="flex space-x-6">
+        <a href="#contact" class="hover:text-zinc-300 transition">Management Office</a>
+        <a href="mailto:ben@vincetigo.com" class="hover:text-zinc-300 transition">ben@vincetigo.com</a>
+        <a href="tel:2676552267" class="hover:text-zinc-300 transition">267-655-2267</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ================= LOGIC & JAVASCRIPT ================= -->
+  <script>
+    lucide.createIcons();
+
+    let tickets = [
+      {
+        id: 'VIN-102',
+        title: 'Master bath ventilation motor resonance',
+        category: 'Electrical',
+        priority: 'Standard',
+        status: 'Technician Dispatched',
+        statusColor: 'bg-amber-950/60 text-amber-400 border-amber-500/30',
+        date: 'Sept 12, 2026'
+      },
+      {
+        id: 'VIN-101',
+        title: 'Kitchen drainage cycle slow discharge',
+        category: 'Plumbing',
+        priority: 'Urgent',
+        status: 'Contractor Assigned',
+        statusColor: 'bg-indigo-950/60 text-indigo-400 border-indigo-500/30',
+        date: 'Sept 14, 2026'
+      }
+    ];
+
+    function renderTickets() {
+      const container = document.getElementById('tickets-container');
+      const countBadge = document.getElementById('ticket-count');
+      countBadge.innerText = `${tickets.length} Active`;
+
+      if (tickets.length === 0) {
+        container.innerHTML = `<div class="p-8 text-center text-zinc-500 text-sm">No active maintenance requests.</div>`;
+        return;
+      }
+
+      container.innerHTML = tickets.map(t => `
+        <div class="p-4 hover:bg-obsidian/40 rounded-lg transition space-y-2">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-mono font-bold text-zinc-400">${t.id}</span>
+              <span class="text-[10px] uppercase font-bold px-2 py-0.5 rounded border ${t.statusColor}">${t.status}</span>
+              ${t.priority === 'Urgent' ? '<span class="text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-rose-950/60 text-rose-400 border border-rose-500/30">Urgent</span>' : ''}
+            </div>
+            <span class="text-xs text-zinc-500 font-mono">${t.date}</span>
+          </div>
+          <h4 class="font-semibold text-zinc-200 text-sm">${t.title}</h4>
+          <p class="text-xs text-zinc-500">Category: <span class="font-medium text-zinc-400">${t.category}</span></p>
+        </div>
+      `).join('');
+      lucide.createIcons();
+    }
+
+    let inPortal = false;
+    function togglePortal() {
+      inPortal = !inPortal;
+      const publicView = document.getElementById('view-public');
+      const portalView = document.getElementById('view-portal');
+      const btnText = document.getElementById('portal-btn-text');
+
+      if (inPortal) {
+        publicView.classList.add('hidden');
+        portalView.classList.remove('hidden');
+        btnText.innerText = "Exit Portal (Home)";
+        renderTickets();
+      } else {
+        publicView.classList.remove('hidden');
+        portalView.classList.add('hidden');
+        btnText.innerText = "Resident Portal";
+      }
+    }
+
+    function switchView(view) {
+      if (view === 'public' && inPortal) {
+        togglePortal();
+      }
+    }
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active');
+
+      const payBtn = document.getElementById('tab-btn-payment');
+      const maintBtn = document.getElementById('tab-btn-maintenance');
+
+      if (tabId === 'payment-tab') {
+        payBtn.className = "px-4 py-2 text-xs font-bold uppercase tracking-wider rounded-lg bg-indigo-600 text-white shadow-lg shadow-indigo-600/20 transition";
+        maintBtn.className = "px-4 py-2 text-xs font-bold uppercase tracking-wider rounded-lg bg-surface text-zinc-300 border border-surfaceBorder hover:bg-zinc-800 transition";
+      } else {
+        maintBtn.className = "px-4 py-2 text-xs font-bold uppercase tracking-wider rounded-lg bg-indigo-600 text-white shadow-lg shadow-indigo-600/20 transition";
+        payBtn.className = "px-4 py-2 text-xs font-bold uppercase tracking-wider rounded-lg bg-surface text-zinc-300 border border-surfaceBorder hover:bg-zinc-800 transition";
+      }
+    }
+
+    function handleTicketSubmit(e) {
+      e.preventDefault();
+      const title = document.getElementById('ticket-title').value;
+      const category = document.getElementById('ticket-category').value;
+      const priority = document.getElementById('ticket-priority').value;
+
+      const newTicket = {
+        id: 'VIN-' + (Math.floor(Math.random() * 900) + 100),
+        title: title,
+        category: category,
+        priority: priority,
+        status: 'Submitted',
+        statusColor: 'bg-zinc-900 text-zinc-300 border-zinc-700',
+        date: 'Just now'
+      };
+
+      tickets.unshift(newTicket);
+      renderTickets();
+      document.getElementById('maintenance-form').reset();
+      alert(`Incident report ${newTicket.id} logged. Property dispatch alerted.`);
+    }
+
+    let bankLinked = false;
+    function triggerPlaidLink() {
+      if (bankLinked) {
+        alert("Plaid Link: Chase (...4821) token is active.");
+        return;
+      }
+      const confirmLink = confirm("[Plaid Link Encrypted Protocol]\n\nAuthorize direct bank token connection via Plaid API?\n\nClick OK to simulate verified connection.");
+      if (confirmLink) {
+        bankLinked = true;
+        document.getElementById('plaid-status-text').innerText = "Chase (...4821) Active";
+        const btn = document.getElementById('plaid-btn');
+        btn.classList.add('border-emerald-500/40', 'text-emerald-400');
+        alert("Bank account linked via Plaid Auth. ACH direct debits enabled.");
+      }
+    }
+
+    function triggerStripeCheckout() {
+      const balanceEl = document.getElementById('portal-balance');
+      if (balanceEl.innerText === "$0.00") {
+        alert("Current balance is $0.00. No ledger adjustments required.");
+        return;
+      }
+
+      const proceed = confirm("[Stripe Checkout Gateway]\n\nRouting to secure Stripe ACH/Card processing for $2,150.00.\n\nClick OK to simulate settled transfer.");
+      if (proceed) {
+        balanceEl.innerText = "$0.00";
+        alert("Transfer authorized. Stripe transaction #ch_vincetigo_9281 logged. Receipt sent.");
+      }
+    }
+
+    function toggleAutopay(checkbox) {
+      const label = document.getElementById('autopay-label');
+      if (checkbox.checked) {
+        label.innerText = "Autopay Active (1st of Mo)";
+        label.classList.add('text-indigo-400');
+      } else {
+        label.innerText = "Autopay Off";
+        label.classList.remove('text-indigo-400');
+      }
+    }
+  </script>
+</body>
+</html>
