@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vincetigo | Client Portal Coming Soon</title>
+  <style>
+    :root { color-scheme: dark; font-family: system-ui, sans-serif; }
+    body { min-height: 100vh; margin: 0; display: grid; place-items: center; background: #070b14; color: #f8fafc; }
+    main { width: min(560px, calc(100% - 40px)); padding: 48px 28px; text-align: center; border: 1px solid #263149; border-radius: 18px; background: #111827; box-shadow: 0 24px 80px rgba(0, 0, 0, .35); }
+    .lock { width: 64px; height: 64px; margin: 0 auto 24px; display: grid; place-items: center; border: 1px solid #6366f1; border-radius: 50%; color: #a5b4fc; font-size: 30px; }
+    h1 { margin: 0; font-size: clamp(28px, 6vw, 44px); }
+    p { margin: 16px auto 28px; max-width: 440px; color: #a8b1c2; line-height: 1.6; }
+    form { display: flex; gap: 10px; max-width: 420px; margin: 0 auto; }
+    input, button { border-radius: 8px; border: 1px solid #34415e; padding: 12px 14px; font: inherit; }
+    input { min-width: 0; flex: 1; background: #070b14; color: #f8fafc; }
+    button { cursor: pointer; background: #4f46e5; color: white; font-weight: 700; }
+    small { display: block; margin-top: 24px; color: #667085; }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="lock" aria-hidden="true">&#128274;</div>
+    <h1>Client Portal Coming Soon</h1>
+    <p>Tenant services and online leasing are under scheduled maintenance. Please check back shortly.</p>
+    <form action="/" method="get">
+      <label for="beta" hidden>Beta access key</label>
+      <input id="beta" name="beta" type="password" placeholder="Beta access key" autocomplete="off" />
+      <button type="submit">Enter beta</button>
+    </form>
+    <small>Vincetigo Property Management</small>
+  </main>
+</body>
+</html>
