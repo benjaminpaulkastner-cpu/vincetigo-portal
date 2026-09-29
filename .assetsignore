@@ -1,0 +1,16 @@
+node_modules/
+.git/
+.wrangler/
+.env
+.env.*
+server.js
+worker.js
+seed.js
+test-resend.js
+package.json
+package-lock.json
+wrangler.jsonc
+CLOUDFLARE_WORKERS.md
+.gitignore
+.assetsignore
+WOEIJF
