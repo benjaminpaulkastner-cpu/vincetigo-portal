@@ -8,6 +8,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
   <script>
     tailwind.config = {
       darkMode: 'class',
@@ -27,27 +28,104 @@
     .tab-content { display: none; }
     .tab-content.active { display: block; }
     html { scroll-behavior: smooth; }
+    body {
+      background-color: #050912;
+      background-image:
+        radial-gradient(circle, rgba(137, 92, 246, 0.42) 1.15px, transparent 1.7px),
+        linear-gradient(135deg, rgba(7, 10, 17, 0.98), rgba(9, 12, 20, 0.96));
+      background-size: 20px 20px, 100% 100%;
+      background-attachment: fixed;
+    }
+    .listing-image-area { position: relative; overflow: hidden; }
+    .listing-image-counter {
+      position: absolute;
+      right: 12px;
+      bottom: 12px;
+      background: rgba(15, 23, 42, 0.72);
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      color: white;
+      padding: 5px 9px;
+      border-radius: 9999px;
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      font-weight: 700;
+      z-index: 2;
+      backdrop-filter: blur(8px);
+    }
+    .listing-detail-modal { display: none; }
+    .listing-detail-modal.active { display: flex; }
+    .listing-thumb.active { border-color: rgba(99, 102, 241, 1); }
+    .detail-image-area { background: linear-gradient(135deg, rgba(15,23,42,0.9), rgba(17,19,26,1)); }
+    .brand-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 44px;
+      height: 44px;
+      min-width: 44px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #2b2f7c 0%, #4a57d8 100%);
+      box-shadow: 0 12px 25px rgba(79, 70, 229, 0.32);
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .brand-badge svg {
+      width: 34px;
+      height: 34px;
+      display: block;
+      overflow: visible;
+    }
+    .brand-badge .brand-shield {
+      fill: rgba(255,255,255,0.02);
+      stroke: #f5f7ff;
+      stroke-width: 2.4;
+      stroke-linejoin: round;
+    }
+    .brand-badge .brand-v {
+      fill: #f5f7ff;
+      font-weight: 900;
+      font-size: 22px;
+      font-family: Arial, Helvetica, sans-serif;
+      letter-spacing: -0.08em;
+    }
   </style>
 </head>
 <body class="bg-obsidian text-zinc-100 font-sans antialiased min-h-screen flex flex-col selection:bg-indigo-500 selection:text-white">
 
   <!-- ================= VINCETIGO DARK NAVBAR ================= -->
-  <header class="bg-surface/80 backdrop-blur-md border-b border-surfaceBorder sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-      <div class="flex items-center space-x-3 cursor-pointer" onclick="switchView('public')">
-        <div class="w-9 h-9 bg-indigo-600 rounded-lg flex items-center justify-center text-white shadow-lg shadow-indigo-600/30">
-          <i data-lucide="shield" class="w-5 h-5"></i>
+  <header class="bg-surface/80 backdrop-blur-md sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 grid grid-cols-[1fr_auto_1fr] items-center gap-4">
+      <div class="flex items-center space-x-3 cursor-pointer justify-self-start" onclick="switchView('public')">
+        <div class="brand-badge" aria-label="Vincetigo logo">
+          <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path class="brand-shield" d="M32 7.5L48 12.5V29.5C48 39.5 41.4 47.7 32 54C22.6 47.7 16 39.5 16 29.5V12.5L32 7.5Z"/>
+            <text class="brand-v" x="32" y="39" text-anchor="middle">V</text>
+          </svg>
         </div>
         <span class="text-xl font-black tracking-wider uppercase text-white">VINCETIGO</span>
       </div>
 
-      <nav class="hidden md:flex items-center space-x-8 text-sm font-medium text-zinc-400">
+      <nav class="hidden md:flex items-center justify-center gap-8 text-sm font-medium text-zinc-400">
         <a href="#properties" onclick="switchView('public')" class="hover:text-indigo-400 transition tracking-wide">Portfolio</a>
-        <a href="#about" onclick="switchView('public')" class="hover:text-indigo-400 transition tracking-wide">Leadership</a>
         <a href="#contact" onclick="switchView('public')" class="hover:text-indigo-400 transition tracking-wide">Contact</a>
       </nav>
 
-      <div class="flex items-center space-x-3">
+      <div class="flex items-center space-x-3 justify-self-end">
+        <button onclick="openApplyNowModal()" class="inline-flex items-center gap-2 bg-surface hover:bg-zinc-800 text-zinc-200 border border-surfaceBorder text-xs font-bold uppercase tracking-wider px-3 py-2 rounded-lg transition">
+          <i data-lucide="file-check-2" class="w-3.5 h-3.5 text-indigo-400"></i>
+          <span>Apply Now</span>
+        </button>
+
+        <button id="admin-btn" onclick="toggleAdminView()" class="inline-flex items-center gap-2 bg-surface hover:bg-zinc-800 text-zinc-200 border border-surfaceBorder text-xs font-bold uppercase tracking-wider px-3 py-2 rounded-lg transition">
+          <i data-lucide="shield-check" class="w-3.5 h-3.5 text-rose-400"></i>
+          <span id="admin-btn-text">Admin Dispatch</span>
+        </button>
+
+        <button id="reset-demo-btn" onclick="resetDemoSession()" class="inline-flex items-center gap-2 bg-surface hover:bg-zinc-800 text-zinc-200 border border-surfaceBorder text-xs font-bold uppercase tracking-wider px-3 py-2 rounded-lg transition">
+          <i data-lucide="rotate-ccw" class="w-3.5 h-3.5 text-amber-400"></i>
+          <span>Reset Demo</span>
+        </button>
+
         <button id="portal-toggle-btn" onclick="togglePortal()" class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold uppercase tracking-wider px-4 py-2 rounded-lg transition shadow-lg shadow-indigo-600/20">
           <i data-lucide="key-round" class="w-4 h-4"></i>
           <span id="portal-btn-text">Resident Portal</span>
@@ -56,10 +134,195 @@
     </div>
   </header>
 
+  <div id="demo-status-toast" class="fixed right-5 bottom-24 z-[80] hidden max-w-sm rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-100 shadow-2xl shadow-emerald-900/20 backdrop-blur-sm">
+    <div id="demo-status-text" class="font-medium">Demo session ready.</div>
+  </div>
+
+  <div id="resident-login-modal" class="fixed inset-0 z-[60] hidden bg-obsidian/80 backdrop-blur-sm px-4 py-6 overflow-y-auto">
+    <div class="max-w-md mx-auto mt-8 bg-surface border border-surfaceBorder rounded-2xl shadow-2xl overflow-hidden">
+      <div class="p-6 border-b border-surfaceBorder flex items-center justify-between">
+        <div>
+          <div class="text-[10px] uppercase tracking-[0.2em] font-bold text-indigo-400">Resident access</div>
+          <h2 class="mt-2 text-2xl font-black text-white">Login to portal</h2>
+        </div>
+        <button type="button" onclick="closeResidentLoginModal()" class="w-8 h-8 rounded-full bg-obsidian border border-surfaceBorder text-zinc-400 hover:text-white transition">✕</button>
+      </div>
+
+      <form id="resident-login-form" onsubmit="handleResidentLogin(event)" class="p-6 space-y-4">
+        <div id="resident-login-view" class="space-y-4">
+          <div class="rounded-xl border border-indigo-500/30 bg-indigo-500/5 p-3 text-xs text-indigo-200">
+            <div class="font-bold uppercase tracking-[0.18em] text-indigo-300 mb-1">Demo mode</div>
+            <div>Use the resident portal demo to explore billing, maintenance, and resident operations.</div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wide text-zinc-400 mb-2">Email or unit</label>
+            <input id="resident-email" type="text" placeholder="you@example.com or Unit 3B" class="w-full bg-obsidian border border-surfaceBorder rounded-lg px-3 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:border-indigo-500 focus:outline-none" required>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wide text-zinc-400 mb-2">Password</label>
+            <input id="resident-password" type="password" placeholder="Enter password" class="w-full bg-obsidian border border-surfaceBorder rounded-lg px-3 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:border-indigo-500 focus:outline-none" required>
+          </div>
+
+          <div class="flex items-center justify-between text-xs text-zinc-400">
+            <label class="inline-flex items-center gap-2"><input type="checkbox" class="rounded border-surfaceBorder bg-obsidian text-indigo-500"> Keep me signed in</label>
+            <button type="button" onclick="toggleResidentHelpForm()" class="text-indigo-400 hover:text-indigo-300">Need help?</button>
+          </div>
+
+          <button type="button" onclick="startResidentDemo()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold uppercase tracking-wider py-3 rounded-lg shadow-lg shadow-indigo-600/20 transition">
+            Start demo
+          </button>
+
+          <button type="submit" class="w-full bg-surface hover:bg-zinc-800 text-zinc-200 border border-surfaceBorder font-bold uppercase tracking-wider py-3 rounded-lg transition">
+            Access resident portal
+          </button>
+        </div>
+
+        <div id="resident-help-view" class="hidden space-y-4">
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wide text-zinc-400 mb-2">Your email</label>
+            <input id="resident-help-email" type="email" placeholder="you@example.com" class="w-full bg-obsidian border border-surfaceBorder rounded-lg px-3 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:border-indigo-500 focus:outline-none" required>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wide text-zinc-400 mb-2">Subject</label>
+            <input id="resident-help-subject" type="text" value="Resident portal question" class="w-full bg-obsidian border border-surfaceBorder rounded-lg px-3 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:border-indigo-500 focus:outline-none" required>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wide text-zinc-400 mb-2">Message</label>
+            <textarea id="resident-help-message" rows="4" placeholder="Tell us what you need help with..." class="w-full bg-obsidian border border-surfaceBorder rounded-lg px-3 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:border-indigo-500 focus:outline-none" required></textarea>
+          </div>
+
+          <div class="flex gap-3">
+            <button type="button" onclick="submitResidentHelpRequest()" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-bold uppercase tracking-wider py-3 rounded-lg shadow-lg shadow-indigo-600/20 transition">
+              Send inquiry
+            </button>
+            <button type="button" onclick="toggleResidentHelpForm()" class="flex-1 bg-surface hover:bg-zinc-800 text-zinc-200 border border-surfaceBorder font-bold uppercase tracking-wider py-3 rounded-lg transition">
+              Back
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="apply-modal" class="fixed inset-0 z-[60] hidden bg-obsidian/80 backdrop-blur-sm px-4 py-6 overflow-y-auto">
+    <div class="max-w-5xl mx-auto mt-8 bg-surface border border-surfaceBorder rounded-2xl shadow-2xl overflow-hidden max-h-[calc(100vh-4rem)] overflow-y-auto">
+      <div class="p-5 border-b border-surfaceBorder flex items-center justify-between gap-4">
+        <div>
+          <div class="text-[10px] uppercase tracking-[0.2em] font-bold text-indigo-400">2-step application flow</div>
+          <h2 class="mt-2 text-2xl font-black text-white">On-site application + screening review</h2>
+        </div>
+        <button type="button" onclick="closeApplyNowModal()" class="w-9 h-9 rounded-full bg-obsidian border border-surfaceBorder text-zinc-400 hover:text-white transition">✕</button>
+      </div>
+
+      <div class="p-6 grid grid-cols-1 xl:grid-cols-[1.1fr_0.9fr] gap-6">
+        <div id="apply-step-1" class="space-y-5">
+          <div class="flex items-center gap-3 text-xs uppercase tracking-[0.18em] text-zinc-400">
+            <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-indigo-600 text-white font-bold">1</span>
+            <span>Application & document upload</span>
+          </div>
+
+          <form id="site-application-form" class="space-y-4" onsubmit="event.preventDefault(); submitApplicationFlow();">
+            <div>
+              <label class="block text-xs font-semibold uppercase tracking-wide text-zinc-400 mb-2">Select a listing</label>
+              <select id="apply-unit-select" class="w-full bg-obsidian border border-surfaceBorder rounded-lg px-3 py-2.5 text-sm text-zinc-100 focus:border-indigo-500 focus:outline-none"></select>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-semibold uppercase tracking-wide text-zinc-400 mb-2">Full name</label>
+                <input id="applicant-name" type="text" placeholder="Jane Applicant" class="w-full bg-obsidian border border-surfaceBorder rounded-lg px-3 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:border-indigo-500 focus:outline-none" required>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold uppercase tracking-wide text-zinc-400 mb-2">Email</label>
+                <input id="applicant-email" type="email" placeholder="jane@email.com" class="w-full bg-obsidian border border-surfaceBorder rounded-lg px-3 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:border-indigo-500 focus:outline-none" required>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-semibold uppercase tracking-wide text-zinc-400 mb-2">Phone</label>
+                <input id="applicant-phone" type="tel" placeholder="(555) 123-4567" class="w-full bg-obsidian border border-surfaceBorder rounded-lg px-3 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:border-indigo-500 focus:outline-none" required>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold uppercase tracking-wide text-zinc-400 mb-2">Move-in date</label>
+                <input id="move-in-date" type="date" class="w-full bg-obsidian border border-surfaceBorder rounded-lg px-3 py-2.5 text-sm text-zinc-100 focus:border-indigo-500 focus:outline-none" required>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold uppercase tracking-wide text-zinc-400 mb-2">Estimated monthly income</label>
+              <input id="monthly-income" type="number" min="0" step="100" placeholder="4500" class="w-full bg-obsidian border border-surfaceBorder rounded-lg px-3 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:border-indigo-500 focus:outline-none" required>
+            </div>
+
+            <div class="rounded-xl border border-dashed border-indigo-500/50 bg-indigo-500/5 p-4">
+              <label class="block text-xs font-semibold uppercase tracking-wide text-indigo-300 mb-3">Upload supporting documents</label>
+
+              <div class="space-y-3">
+                <div>
+                  <label class="block text-xs font-medium text-zinc-300 mb-1">W-2s / paystubs</label>
+                  <input id="paystub-upload" type="file" accept=".pdf,.png,.jpg,.jpeg" multiple class="block w-full text-sm text-zinc-300 file:mr-3 file:rounded-lg file:border-0 file:bg-indigo-600 file:px-3 file:py-2 file:text-xs file:font-bold file:uppercase file:tracking-wide file:text-white" >
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-zinc-300 mb-1">Government ID</label>
+                  <input id="id-upload" type="file" accept=".pdf,.png,.jpg,.jpeg" class="block w-full text-sm text-zinc-300 file:mr-3 file:rounded-lg file:border-0 file:bg-indigo-600 file:px-3 file:py-2 file:text-xs file:font-bold file:uppercase file:tracking-wide file:text-white" >
+                </div>
+              </div>
+            </div>
+
+            <div class="rounded-xl border border-surfaceBorder bg-obsidian p-4 text-sm text-zinc-300">
+              <div class="flex items-center gap-2 text-xs uppercase tracking-wide text-indigo-400 font-bold mb-2">
+                <i data-lucide="shield-check" class="w-3.5 h-3.5"></i> Compliance note
+              </div>
+              Documents are uploaded directly to the property backend or cloud storage. Background screening is not triggered until a qualified applicant is reviewed and approved by staff.
+            </div>
+
+            <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold uppercase tracking-wider py-3 rounded-lg shadow-lg shadow-indigo-600/20 transition">
+              Submit for review
+            </button>
+          </form>
+        </div>
+
+        <div id="apply-step-2" class="hidden rounded-2xl border border-surfaceBorder bg-obsidian overflow-hidden min-h-[520px]">
+          <div class="flex items-center justify-between px-4 py-3 border-b border-surfaceBorder bg-surface/80">
+            <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-zinc-300">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+              Step 2: review & trigger
+            </div>
+            <span class="text-[10px] uppercase tracking-[0.2em] text-zinc-500">Admin approval</span>
+          </div>
+
+          <div class="p-5 space-y-5">
+            <div class="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4">
+              <div class="text-[10px] uppercase tracking-[0.18em] text-emerald-300 font-bold">Application submitted</div>
+              <div id="application-summary-name" class="mt-2 text-xl font-black text-white">Applicant</div>
+              <div id="application-summary-unit" class="mt-1 text-sm text-zinc-300">Unit</div>
+            </div>
+
+            <div class="space-y-3 text-sm text-zinc-300">
+              <div class="flex items-start gap-3"><i data-lucide="check-circle" class="w-4 h-4 text-emerald-400 mt-0.5"></i> Uploaded income documents securely saved to backend or cloud storage.</div>
+              <div class="flex items-start gap-3"><i data-lucide="check-circle" class="w-4 h-4 text-emerald-400 mt-0.5"></i> Admin Console can review uploaded W-2s, pay stubs, and ID before approval.</div>
+              <div class="flex items-start gap-3"><i data-lucide="check-circle" class="w-4 h-4 text-emerald-400 mt-0.5"></i> Once income thresholds are verified, screening invite can be automatically sent.</div>
+            </div>
+
+            <div class="rounded-xl border border-surfaceBorder bg-surface p-4 space-y-3">
+              <div class="text-xs uppercase tracking-[0.18em] text-indigo-400 font-bold">Background screening trigger</div>
+              <p class="text-sm text-zinc-300">This is where the system sends the TransUnion SmartMove or RentSpree invite only after staff confirms income documentation meets policy thresholds.</p>
+            </div>
+
+            <button type="button" onclick="triggerBackgroundCheck()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold uppercase tracking-wider py-3 rounded-lg shadow-lg shadow-indigo-600/20 transition">
+              Trigger screening invite
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- ================= VIEW 1: PUBLIC REAL ESTATE SITE ================= -->
   <main id="view-public" class="flex-grow">
     <!-- Hero Section -->
-    <section class="relative py-28 px-4 sm:px-6 lg:px-8 overflow-hidden border-b border-surfaceBorder bg-radial from-surface to-obsidian">
+    <section class="relative py-20 px-4 sm:px-6 lg:px-8 overflow-hidden border-b border-surfaceBorder bg-radial from-surface to-obsidian">
       <div class="absolute inset-0 opacity-15 bg-[radial-gradient(#6366f1_1px,transparent_1px)] [background-size:24px_24px]"></div>
       <div class="relative max-w-4xl mx-auto text-center space-y-6">
         <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-indigo-950/60 text-indigo-400 border border-indigo-500/30">
@@ -84,146 +347,251 @@
     </section>
 
     <!-- Properties Grid -->
-    <section id="properties" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-      <div class="flex items-center justify-between mb-10">
+    <section id="properties" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div class="flex items-center justify-between mb-6 gap-4 flex-wrap">
         <div>
           <span class="text-xs font-bold uppercase tracking-widest text-indigo-400">Holdings</span>
           <h2 class="text-2xl font-black text-white mt-1">Featured Residences</h2>
         </div>
-        <span class="text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-indigo-400 cursor-pointer transition">Browse All Units &rarr;</span>
+        <button type="button" onclick="resetListingFilters()" class="text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-indigo-400 cursor-pointer transition">Browse All Units &rarr;</button>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <!-- Property 1 -->
-        <div class="bg-surface rounded-xl border border-surfaceBorder overflow-hidden group hover:border-indigo-500/40 transition duration-300">
-          <div class="h-52 relative overflow-hidden">
-            <img src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=600&q=80" alt="Apartment" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
-            <div class="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-transparent"></div>
-            <span class="absolute top-3 right-3 bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-semibold px-2.5 py-0.5 rounded">Active Lease</span>
-          </div>
-          <div class="p-6 space-y-3">
-            <div class="flex justify-between items-baseline">
-              <h3 class="font-bold text-lg text-white">The Spruce Townhouse</h3>
-              <span class="text-indigo-400 font-bold">$2,250<span class="text-zinc-500 text-xs font-normal">/mo</span></span>
-            </div>
-            <p class="text-zinc-400 text-xs flex items-center gap-1.5">
-              <i data-lucide="map-pin" class="w-3.5 h-3.5 text-indigo-400"></i> Center City, Philadelphia, PA
-            </p>
-            <div class="pt-4 border-t border-surfaceBorder flex justify-between text-xs text-zinc-400">
-              <span>2 Bed</span> • <span>2 Bath</span> • <span>1,150 sq ft</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Property 2 -->
-        <div class="bg-surface rounded-xl border border-surfaceBorder overflow-hidden group hover:border-indigo-500/40 transition duration-300">
-          <div class="h-52 relative overflow-hidden">
-            <img src="https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=600&q=80" alt="Loft" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
-            <div class="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-transparent"></div>
-            <span class="absolute top-3 right-3 bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-semibold px-2.5 py-0.5 rounded">Active Lease</span>
-          </div>
-          <div class="p-6 space-y-3">
-            <div class="flex justify-between items-baseline">
-              <h3 class="font-bold text-lg text-white">Fishtown Modern Loft</h3>
-              <span class="text-indigo-400 font-bold">$1,850<span class="text-zinc-500 text-xs font-normal">/mo</span></span>
-            </div>
-            <p class="text-zinc-400 text-xs flex items-center gap-1.5">
-              <i data-lucide="map-pin" class="w-3.5 h-3.5 text-indigo-400"></i> Fishtown, Philadelphia, PA
-            </p>
-            <div class="pt-4 border-t border-surfaceBorder flex justify-between text-xs text-zinc-400">
-              <span>1 Bed</span> • <span>1 Bath</span> • <span>820 sq ft</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Property 3 -->
-        <div class="bg-surface rounded-xl border border-surfaceBorder overflow-hidden group hover:border-indigo-500/40 transition duration-300">
-          <div class="h-52 relative overflow-hidden">
-            <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=600&q=80" alt="Home" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
-            <div class="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-transparent"></div>
-            <span class="absolute top-3 right-3 bg-zinc-800 text-zinc-300 border border-zinc-700 text-xs font-semibold px-2.5 py-0.5 rounded">Pending Acquisition</span>
-          </div>
-          <div class="p-6 space-y-3">
-            <div class="flex justify-between items-baseline">
-              <h3 class="font-bold text-lg text-white">Fairmount Contemporary</h3>
-              <span class="text-indigo-400 font-bold">$2,600<span class="text-zinc-500 text-xs font-normal">/mo</span></span>
-            </div>
-            <p class="text-zinc-400 text-xs flex items-center gap-1.5">
-              <i data-lucide="map-pin" class="w-3.5 h-3.5 text-indigo-400"></i> Fairmount, Philadelphia, PA
-            </p>
-            <div class="pt-4 border-t border-surfaceBorder flex justify-between text-xs text-zinc-400">
-              <span>3 Bed</span> • <span>2.5 Bath</span> • <span>1,400 sq ft</span>
-            </div>
-          </div>
+      <div class="bg-surface rounded-2xl border border-surfaceBorder p-4 sm:p-5 mb-6 shadow-xl">
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
+          <label class="block">
+            <span class="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-2">Price</span>
+            <select id="filter-price" class="w-full bg-obsidian border border-surfaceBorder rounded-lg px-3 py-2 text-sm text-zinc-200 outline-none focus:border-indigo-500">
+              <option value="all">Any Price</option>
+              <option value="under-2000">Under $2,000</option>
+              <option value="2000-2500">$2,000–$2,500</option>
+              <option value="2500-plus">$2,500+</option>
+            </select>
+          </label>
+          <label class="block">
+            <span class="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-2">Neighborhood</span>
+            <select id="filter-neighborhood" class="w-full bg-obsidian border border-surfaceBorder rounded-lg px-3 py-2 text-sm text-zinc-200 outline-none focus:border-indigo-500">
+              <option value="all">Any Area</option>
+              <option value="center-city">Center City</option>
+              <option value="fishtown">Fishtown</option>
+              <option value="fairmount">Fairmount</option>
+              <option value="east-passyunk">East Passyunk</option>
+            </select>
+          </label>
+          <label class="block">
+            <span class="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-2">Bedrooms</span>
+            <select id="filter-bedrooms" class="w-full bg-obsidian border border-surfaceBorder rounded-lg px-3 py-2 text-sm text-zinc-200 outline-none focus:border-indigo-500">
+              <option value="all">Any</option>
+              <option value="1">1 Bed</option>
+              <option value="2">2 Bed</option>
+              <option value="3">3 Bed</option>
+            </select>
+          </label>
+          <label class="block">
+            <span class="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-2">Pet Policy</span>
+            <select id="filter-pets" class="w-full bg-obsidian border border-surfaceBorder rounded-lg px-3 py-2 text-sm text-zinc-200 outline-none focus:border-indigo-500">
+              <option value="all">Any</option>
+              <option value="pet-friendly">Pet Friendly</option>
+              <option value="no-pets">No Pets</option>
+            </select>
+          </label>
+          <label class="block">
+            <span class="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-2">Availability</span>
+            <select id="filter-availability" class="w-full bg-obsidian border border-surfaceBorder rounded-lg px-3 py-2 text-sm text-zinc-200 outline-none focus:border-indigo-500">
+              <option value="all">Any Date</option>
+              <option value="now">Available Now</option>
+              <option value="soon">Available Soon</option>
+            </select>
+          </label>
         </div>
       </div>
-    </section>
 
-    <!-- ================= FOUNDER & LEADERSHIP SECTION ================= -->
-    <section id="about" class="py-20 border-t border-surfaceBorder bg-surface/40">
-      <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="bg-surface rounded-2xl border border-surfaceBorder p-8 sm:p-12 shadow-2xl relative overflow-hidden">
-          <div class="absolute -top-32 -right-32 w-64 h-64 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none"></div>
+      <div id="property-listings" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
+      <div id="listing-detail-modal" class="listing-detail-modal fixed inset-0 z-[70] items-center justify-center bg-obsidian/75 backdrop-blur-sm p-4">
+        <div class="w-full max-w-5xl max-h-[90vh] bg-surface rounded-2xl border border-surfaceBorder shadow-2xl overflow-hidden relative">
+          <button type="button" onclick="closeListingDetail()" class="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-obsidian border border-surfaceBorder text-zinc-300 hover:text-white transition">
+            <span class="text-lg leading-none">×</span>
+          </button>
 
-          <div class="grid grid-cols-1 md:grid-cols-12 gap-10 items-center">
-            
-            <!-- Headshot Portrait (Square Crop on Head) -->
-            <div class="md:col-span-4 flex flex-col items-center">
-              <div class="w-56 h-56 sm:w-60 sm:h-60 rounded-2xl overflow-hidden ring-2 ring-indigo-500/30 shadow-2xl bg-zinc-900 relative">
-                <img 
-                  src="untitled%20folder/headshot.jpeg" 
-                  alt="Ben Kastner - Founder & CEO" 
-                  class="w-full h-full object-cover object-[50%_15%]"
-                />
+          <div class="grid grid-cols-1 xl:grid-cols-[1.2fr_0.8fr] max-h-[90vh]">
+            <div class="detail-image-area p-4 md:p-6">
+              <div class="relative rounded-2xl overflow-hidden border border-surfaceBorder bg-obsidian">
+                <img id="detail-main-image" src="" alt="Selected property" class="w-full h-[420px] object-cover">
+                <div id="detail-image-counter" class="listing-image-counter">1 / 1</div>
+                <button type="button" onclick="changeDetailImage(-1)" class="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-surface/80 border border-surfaceBorder text-white hover:bg-surface transition">←</button>
+                <button type="button" onclick="changeDetailImage(1)" class="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-surface/80 border border-surfaceBorder text-white hover:bg-surface transition">→</button>
               </div>
-              <span class="mt-4 text-[11px] font-bold tracking-widest uppercase text-zinc-500">Executive Leadership</span>
+              <div id="detail-thumbs" class="mt-4 grid grid-cols-4 gap-3"></div>
             </div>
 
-            <!-- Founder Bio & Direct Contact -->
-            <div class="md:col-span-8 space-y-5">
+            <div class="listing-detail-scroll p-6 md:p-8 lg:p-10 flex flex-col justify-between max-h-[90vh]">
               <div>
-                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 mb-3">
-                  <i data-lucide="award" class="w-3.5 h-3.5"></i> Founder & CEO
-                </span>
-                <h2 class="text-3xl font-extrabold text-white tracking-tight">Ben Kastner</h2>
-                <p class="text-sm font-medium text-zinc-400">Principal Operator, Vincetigo Holdings</p>
+                <div class="text-[10px] font-bold uppercase tracking-[0.18em] text-indigo-400">Featured listing</div>
+                <h3 id="detail-title" class="mt-3 text-3xl font-black text-white">Property Title</h3>
+                <div id="detail-price" class="mt-3 text-3xl font-black text-indigo-400">$0</div>
+
+                <div class="mt-6 grid grid-cols-3 gap-3 border-y border-surfaceBorder py-4">
+                  <div>
+                    <div class="text-[10px] uppercase tracking-[0.16em] text-zinc-500">Beds</div>
+                    <div id="detail-beds" class="mt-1 text-xl font-black text-white">0</div>
+                  </div>
+                  <div>
+                    <div class="text-[10px] uppercase tracking-[0.16em] text-zinc-500">Baths</div>
+                    <div id="detail-baths" class="mt-1 text-xl font-black text-white">0</div>
+                  </div>
+                  <div>
+                    <div class="text-[10px] uppercase tracking-[0.16em] text-zinc-500">Sqft</div>
+                    <div id="detail-sqft" class="mt-1 text-xl font-black text-white">0</div>
+                  </div>
+                </div>
+
+                <div class="mt-6">
+                  <div class="text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-400">About This Property</div>
+                  <p id="detail-description" class="mt-3 text-sm leading-7 text-zinc-300"></p>
+                </div>
               </div>
 
-              <div class="space-y-3 text-zinc-300 text-sm leading-relaxed">
-                <p>
-                  Ben enlisted in the Army at 17 years old and served for 6 years, traveling to Germany and living stationed overseas in South Korea. During his active-duty service, he demonstrated disciplined operational commitment while simultaneously completing his Bachelor’s degree.
-                </p>
-                <p>
-                  Following his military career, Ben relocated to Philadelphia for school and immediately fell in love with the city's architectural character and community. He is currently pursuing a Part-Time MBA at the NYU Stern School of Business and preparing for future law school studies (JD), applying structured executive leadership and asset management precision to Vincetigo.
-                </p>
+              <div class="mt-8 flex gap-3">
+                <button type="button" onclick="openApplyNowModal(document.getElementById('detail-title').textContent.trim())" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-bold uppercase tracking-wider px-4 py-3 rounded-lg transition">
+                  Apply now
+                </button>
+                <button type="button" onclick="closeListingDetail()" class="flex-1 bg-zinc-900 hover:bg-zinc-800 text-zinc-200 border border-surfaceBorder font-bold uppercase tracking-wider px-4 py-3 rounded-lg transition">
+                  Close
+                </button>
               </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
-              <!-- Direct Contact Badges -->
-              <div id="contact" class="pt-4 border-t border-surfaceBorder flex flex-wrap gap-4 items-center">
-                <a href="tel:2676552267" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-obsidian border border-surfaceBorder text-xs font-semibold text-zinc-200 hover:border-indigo-500 hover:text-indigo-400 transition shadow-sm">
-                  <i data-lucide="phone" class="w-3.5 h-3.5 text-indigo-400"></i>
-                  Cell: 267-655-2267
-                </a>
-                <a href="mailto:ben@vincetigo.com" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-obsidian border border-surfaceBorder text-xs font-semibold text-zinc-200 hover:border-indigo-500 hover:text-indigo-400 transition shadow-sm">
-                  <i data-lucide="mail" class="w-3.5 h-3.5 text-indigo-400"></i>
-                  ben@vincetigo.com
-                </a>
+      <div class="mt-8">
+        <div class="bg-surface rounded-2xl border border-surfaceBorder p-6 sm:p-8">
+          <span class="text-xs font-bold uppercase tracking-widest text-indigo-400">Digital Leasing</span>
+          <h3 class="mt-3 text-2xl font-black text-white">Faster leasing, tighter screenings, easier tours.</h3>
+          <ul class="mt-5 space-y-3 text-sm text-zinc-300">
+            <li class="flex items-start gap-3"><i data-lucide="check-circle" class="w-4 h-4 text-emerald-400 mt-0.5"></i> Secure online applications with automated background and credit review</li>
+            <li class="flex items-start gap-3"><i data-lucide="check-circle" class="w-4 h-4 text-emerald-400 mt-0.5"></i> Instant self-showing and calendar-based tour scheduling</li>
+            <li class="flex items-start gap-3"><i data-lucide="check-circle" class="w-4 h-4 text-emerald-400 mt-0.5"></i> DocuSign-ready lease packages and digital fee collection</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
+      <div class="mb-8">
+        <span class="text-xs font-bold uppercase tracking-widest text-indigo-400">Trust & social proof</span>
+        <h2 class="text-2xl font-black text-white mt-1">Residents, owners, and partners choose Vincetigo</h2>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <article class="bg-surface rounded-2xl border border-surfaceBorder p-6">
+          <div class="flex items-center gap-2 text-indigo-400 text-sm font-bold"><i data-lucide="star" class="w-4 h-4"></i> 4.9/5 resident experience</div>
+          <p class="mt-4 text-zinc-300 leading-relaxed">“The portal is easy, maintenance tickets are answered fast, and the communication is incredibly clear.”</p>
+          <div class="mt-4 text-xs uppercase tracking-[0.18em] text-zinc-500">— Sarah M., resident</div>
+        </article>
+        <article class="bg-surface rounded-2xl border border-surfaceBorder p-6">
+          <div class="flex items-center gap-2 text-indigo-400 text-sm font-bold"><i data-lucide="shield-check" class="w-4 h-4"></i> 99.2% compliance adherence</div>
+          <p class="mt-4 text-zinc-300 leading-relaxed">“Their reporting, resident communication, and operational discipline gave me confidence in the investment from day one.”</p>
+          <div class="mt-4 text-xs uppercase tracking-[0.18em] text-zinc-500">— David T., owner</div>
+        </article>
+        <article class="bg-surface rounded-2xl border border-surfaceBorder p-6">
+          <div class="flex items-center gap-2 text-indigo-400 text-sm font-bold"><i data-lucide="trending-up" class="w-4 h-4"></i> 18% faster leasing cycle</div>
+          <p class="mt-4 text-zinc-300 leading-relaxed">“Their digital process, tenant screening, and property marketing stack outperform most local operators I’ve worked with.”</p>
+          <div class="mt-4 text-xs uppercase tracking-[0.18em] text-zinc-500">— Linda R., broker</div>
+        </article>
+      </div>
+    </section>
+
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+      <div class="mb-6">
+        <span class="text-xs font-bold uppercase tracking-widest text-indigo-400">Target acquisition focus</span>
+        <h2 class="text-2xl font-black text-white mt-1">West Philly along the Market-Frankford line</h2>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <article class="bg-surface rounded-2xl border border-surfaceBorder p-6 hover:border-indigo-500/40 transition">
+          <div class="text-sm font-semibold text-indigo-400">West Philly</div>
+          <h3 class="mt-2 text-xl font-bold text-white">Dense rental demand</h3>
+          <p class="mt-3 text-sm text-zinc-400 leading-relaxed">Strong tenant demand and continued upside in neighborhoods centered around transit access, walkability, and long-term renter retention.</p>
+          <div class="mt-4 text-xs text-zinc-500">Transit • Workforce Housing • Value Add</div>
+        </article>
+        <article class="bg-surface rounded-2xl border border-surfaceBorder p-6 hover:border-indigo-500/40 transition">
+          <div class="text-sm font-semibold text-indigo-400">Market-Frankford Line</div>
+          <h3 class="mt-2 text-xl font-bold text-white">Mobility-driven demand</h3>
+          <p class="mt-3 text-sm text-zinc-400 leading-relaxed">Properties positioned near the elevated rail corridor benefit from commuter access, tenant stability, and easier operational visibility.</p>
+          <div class="mt-4 text-xs text-zinc-500">Commuter Access • Convenience • Renters</div>
+        </article>
+        <article class="bg-surface rounded-2xl border border-surfaceBorder p-6 hover:border-indigo-500/40 transition">
+          <div class="text-sm font-semibold text-indigo-400">Near 62nd Street</div>
+          <h3 class="mt-2 text-xl font-bold text-white">Core acquisition zone</h3>
+          <p class="mt-3 text-sm text-zinc-400 leading-relaxed">This corridor is a primary focus for multifamily acquisition, with opportunities to improve operations, increase occupancy, and drive value through disciplined management.</p>
+          <div class="mt-4 text-xs text-zinc-500">Multifamily • West Philly • 62nd Street</div>
+        </article>
+      </div>
+    </section>
+
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+      <div class="rounded-[28px] border border-indigo-500/30 bg-[#0a1220]/90 p-6 md:p-8 shadow-[0_0_0_1px_rgba(99,102,241,0.08)]">
+        <div class="grid grid-cols-1 lg:grid-cols-[0.9fr_1.4fr] gap-8 lg:gap-12 items-start">
+          <div class="w-full max-w-[380px]">
+            <div class="mb-5 flex items-center justify-center">
+              <div class="inline-flex items-center gap-2 rounded-full border border-indigo-500/40 bg-indigo-500/10 px-4 py-2 text-sm font-semibold text-indigo-300">
+                <i data-lucide="user-round" class="w-4 h-4"></i>
+                <span>Founder & CEO</span>
               </div>
             </div>
 
+            <div class="rounded-[22px] bg-[#0d1420] p-4">
+              <div class="mb-4 flex items-center gap-3 text-2xl font-medium text-white leading-none tracking-tight">
+                <span>Ben Kastner - Founder & CEO</span>
+              </div>
+
+              <div class="h-[300px] md:h-[360px] overflow-hidden rounded-[18px] bg-[#0e1320]">
+                <img src="/untitled%20folder/headshot.jpeg" alt="Ben Kastner portrait" class="h-full w-full object-cover object-[center_15%]" />
+              </div>
+            </div>
+
+            <div class="mt-5 text-[11px] font-bold uppercase tracking-[0.28em] text-zinc-400">Executive Leadership</div>
+          </div>
+
+          <div class="lg:pt-8">
+            <h2 class="text-4xl md:text-5xl font-black text-white leading-none tracking-tight">Ben Kastner</h2>
+            <p class="mt-3 text-xl text-zinc-300">Principal Operator, Vincetigo Holdings</p>
+
+            <div class="mt-6 space-y-5 text-base leading-8 text-zinc-300">
+              <p>
+                Ben enlisted in the Army at 17 years old and served for 6 years, traveling to Germany and living stationed overseas in South Korea. During his active-duty service, he demonstrated disciplined operational commitment while simultaneously completing his Bachelor's degree.
+              </p>
+              <p>
+                Following his military career, Ben relocated to Philadelphia for school and immediately fell in love with the city’s architectural character and community. He is currently pursuing a Part-Time MBA at the NYU Stern School of Business and preparing for future law school studies (JD), applying structured executive leadership and asset management precision to Vincetigo.
+              </p>
+            </div>
+
+            <div class="mt-8 flex flex-col sm:flex-row gap-4">
+              <a href="tel:+12676552267" class="inline-flex flex-1 items-center justify-center gap-3 rounded-xl border border-indigo-500/30 bg-[#0c1220] px-4 py-3 text-base font-medium text-white shadow-sm shadow-indigo-900/10 transition hover:border-indigo-400">
+                <i data-lucide="phone" class="w-5 h-5 text-indigo-300"></i>
+                <span>Cell: 267-655-2267</span>
+              </a>
+              <a href="mailto:ben@vincetigo.com" class="inline-flex flex-1 items-center justify-center gap-3 rounded-xl border border-indigo-500/30 bg-[#0c1220] px-4 py-3 text-base font-medium text-white shadow-sm shadow-indigo-900/10 transition hover:border-indigo-400">
+                <i data-lucide="mail" class="w-5 h-5 text-indigo-300"></i>
+                <span>ben@vincetigo.com</span>
+              </a>
+            </div>
           </div>
         </div>
       </div>
     </section>
+
   </main>
 
   <!-- ================= VIEW 2: TENANT DASHBOARD PORTAL (DARK) ================= -->
   <main id="view-portal" class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 w-full hidden">
-    <!-- Portal Header -->
+    <div id="portal-success-banner" class="hidden mb-4 flex items-center gap-3 rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-100">
+      <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i>
+      <span id="portal-success-banner-text">Resident access confirmed.</span>
+    </div>
+
     <div class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
       <div>
         <span class="text-xs font-bold uppercase tracking-widest text-indigo-400">Secure Resident Interface</span>
-        <h1 class="text-2xl font-black text-white mt-0.5">Asset & Payment Portal</h1>
+        <h1 class="text-2xl font-black text-white mt-0.5">Resident Portal</h1>
         <p class="text-xs text-zinc-400">Unit 3B • 1420 Pine Street, Center City, Philadelphia</p>
       </div>
       <div class="flex gap-2">
@@ -273,7 +641,7 @@
           </div>
           <div class="pt-4">
             <label class="relative inline-flex items-center cursor-pointer">
-              <input type="checkbox" class="sr-only peer" onchange="toggleAutopay(this)">
+              <input id="autopay-toggle" type="checkbox" class="sr-only peer" onchange="toggleAutopay(this)">
               <div class="w-11 h-6 bg-zinc-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
               <span class="ml-3 text-xs font-semibold text-zinc-400" id="autopay-label">Autopay Off</span>
             </label>
@@ -322,45 +690,45 @@
       </div>
     </section>
 
-    <!-- TAB 2: MAINTENANCE REQUEST TRACKER -->
+    <!-- TAB 2: RESIDENT MAINTENANCE TRACKER -->
     <section id="maintenance-tab" class="tab-content space-y-6">
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div class="bg-surface rounded-xl border border-surfaceBorder p-6 shadow-xl">
-          <h2 class="font-bold text-white text-sm mb-1">Log Maintenance Incident</h2>
-          <p class="text-xs text-zinc-400 mb-4">Direct dispatch to property operations and contractors.</p>
+          <h2 class="font-bold text-white text-sm mb-1">Submit Repair Request</h2>
+          <p class="text-xs text-zinc-400 mb-4">Tickets are sent directly to Vincetigo operational dispatch.</p>
 
-          <form id="maintenance-form" onsubmit="handleTicketSubmit(event)" class="space-y-4">
+          <form id="maintenance-form" onsubmit="handleTenantSubmit(event)" class="space-y-4">
             <div>
               <label class="block text-xs font-semibold text-zinc-300 mb-1">Category</label>
               <select id="ticket-category" class="w-full text-xs border border-surfaceBorder rounded-lg p-2.5 bg-obsidian text-zinc-200 focus:border-indigo-500 focus:outline-none">
-                <option value="Plumbing">Plumbing (Leak, Toilet, Water)</option>
+                <option value="Plumbing">Plumbing (Leak, Drain, Toilet)</option>
                 <option value="HVAC / Climate">HVAC / Heating / Cooling</option>
-                <option value="Electrical">Electrical / Lighting</option>
+                <option value="Electrical">Electrical / Fixtures</option>
                 <option value="Appliance">Kitchen Appliance</option>
-                <option value="Structural">Doors / Windows / Hardware</option>
+                <option value="Structural">Doors / Locks / Windows</option>
               </select>
             </div>
 
             <div>
               <label class="block text-xs font-semibold text-zinc-300 mb-1">Priority</label>
               <select id="ticket-priority" class="w-full text-xs border border-surfaceBorder rounded-lg p-2.5 bg-obsidian text-zinc-200 focus:border-indigo-500 focus:outline-none">
-                <option value="Standard" selected>Standard Priority</option>
-                <option value="Urgent">Urgent (Water / Electrical / No Heat)</option>
+                <option value="Standard" selected>Standard Service</option>
+                <option value="Urgent">Urgent Priority (Water/Heat Outage)</option>
               </select>
             </div>
 
             <div>
-              <label class="block text-xs font-semibold text-zinc-300 mb-1">Subject</label>
-              <input id="ticket-title" type="text" placeholder="e.g. Master bath faucet dripping" required class="w-full text-xs border border-surfaceBorder rounded-lg p-2.5 bg-obsidian text-zinc-200 placeholder-zinc-600 focus:border-indigo-500 focus:outline-none">
+              <label class="block text-xs font-semibold text-zinc-300 mb-1">Issue Summary</label>
+              <input id="ticket-title" type="text" placeholder="e.g. Master bathroom faucet dripping" required class="w-full text-xs border border-surfaceBorder rounded-lg p-2.5 bg-obsidian text-zinc-200 placeholder-zinc-600 focus:border-indigo-500 focus:outline-none">
             </div>
 
             <div>
-              <label class="block text-xs font-semibold text-zinc-300 mb-1">Incident Details</label>
-              <textarea id="ticket-desc" rows="3" placeholder="Describe issue and unit entry permission..." required class="w-full text-xs border border-surfaceBorder rounded-lg p-2.5 bg-obsidian text-zinc-200 placeholder-zinc-600 focus:border-indigo-500 focus:outline-none"></textarea>
+              <label class="block text-xs font-semibold text-zinc-300 mb-1">Access Notes & Details</label>
+              <textarea id="ticket-desc" rows="3" placeholder="Provide detail and let us know if management has entry permission..." required class="w-full text-xs border border-surfaceBorder rounded-lg p-2.5 bg-obsidian text-zinc-200 placeholder-zinc-600 focus:border-indigo-500 focus:outline-none"></textarea>
             </div>
 
             <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold uppercase tracking-wider py-2.5 rounded-lg text-xs shadow-lg shadow-indigo-600/20 transition">
-              Dispatch Request
+              Transmit Ticket
             </button>
           </form>
         </div>
@@ -368,13 +736,13 @@
         <div class="lg:col-span-2 bg-surface rounded-xl border border-surfaceBorder shadow-xl flex flex-col">
           <div class="p-5 border-b border-surfaceBorder flex justify-between items-center">
             <div>
-              <h2 class="font-bold text-white text-sm">Active Incident Tickets</h2>
+              <h2 class="font-bold text-white text-sm">Active Resident Tickets</h2>
               <p class="text-xs text-zinc-400">Live operational dispatch status</p>
             </div>
-            <span id="ticket-count" class="bg-indigo-950/80 border border-indigo-500/30 text-indigo-400 text-xs font-bold px-2.5 py-1 rounded-full">2 Active</span>
+            <span id="tenant-ticket-count" class="bg-indigo-950/80 border border-indigo-500/30 text-indigo-400 text-xs font-bold px-2.5 py-1 rounded-full">2 Active</span>
           </div>
 
-          <div id="tickets-container" class="divide-y divide-surfaceBorder p-2 overflow-y-auto max-h-[500px]">
+          <div id="tenant-tickets-container" class="divide-y divide-surfaceBorder p-2 overflow-y-auto max-h-[500px]">
             <!-- Dynamic Tickets Loaded Here -->
           </div>
         </div>
@@ -382,8 +750,120 @@
     </section>
   </main>
 
+  <!-- ================= VIEW 3: OPERATOR BACKEND ADMIN CONSOLE ================= -->
+  <main id="view-admin" class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 w-full hidden">
+    <!-- Admin Header & KPI Bar -->
+    <div class="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div>
+        <div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider bg-rose-950/70 border border-rose-500/40 text-rose-300">
+          <span class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping"></span>
+          Operator Dispatch Console (Back-End)
+        </div>
+        <h1 class="text-2xl font-black text-white mt-2">Maintenance Operations & Ticket Dispatch</h1>
+        <p class="text-xs text-zinc-400">Manage work orders, assign outside contractors, and sync live updates to residents.</p>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <button onclick="resetDemoData()" class="px-3 py-2 text-xs font-bold uppercase tracking-wider rounded-lg bg-zinc-900 border border-surfaceBorder text-zinc-400 hover:text-rose-400 transition">
+          Reset Data
+        </button>
+        <button onclick="toggleAdminView()" class="px-4 py-2 text-xs font-bold uppercase tracking-wider rounded-lg bg-indigo-600 text-white shadow-lg shadow-indigo-600/20 transition">
+          Exit Admin
+        </button>
+      </div>
+    </div>
+
+    <!-- Admin KPI Stat Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-8">
+      <div class="bg-surface rounded-xl border border-surfaceBorder p-4">
+        <span class="text-xs font-semibold text-zinc-400">Total Work Orders</span>
+        <p class="text-2xl font-black text-white mt-1" id="stat-total">0</p>
+      </div>
+      <div class="bg-surface rounded-xl border border-surfaceBorder p-4">
+        <span class="text-xs font-semibold text-amber-400">Awaiting Dispatch</span>
+        <p class="text-2xl font-black text-white mt-1" id="stat-pending">0</p>
+      </div>
+      <div class="bg-surface rounded-xl border border-surfaceBorder p-4">
+        <span class="text-xs font-semibold text-indigo-400">In Progress / Assigned</span>
+        <p class="text-2xl font-black text-white mt-1" id="stat-progress">0</p>
+      </div>
+      <div class="bg-surface rounded-xl border border-surfaceBorder p-4">
+        <span class="text-xs font-semibold text-emerald-400">Completed & Closed</span>
+        <p class="text-2xl font-black text-white mt-1" id="stat-completed">0</p>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 xl:grid-cols-[1.25fr_0.75fr] gap-6 mb-8">
+      <div class="bg-surface rounded-xl border border-surfaceBorder shadow-xl overflow-hidden">
+        <div class="p-5 border-b border-surfaceBorder flex items-center justify-between gap-3">
+          <h2 class="font-bold text-white text-base">Portfolio Listings</h2>
+          <span id="admin-listing-count" class="text-[10px] uppercase tracking-[0.18em] text-zinc-500">0 active</span>
+        </div>
+        <div id="admin-listings-container" class="divide-y divide-surfaceBorder max-h-[360px] overflow-y-auto"></div>
+      </div>
+
+      <div class="bg-surface rounded-xl border border-surfaceBorder shadow-xl overflow-hidden">
+        <div class="p-5 border-b border-surfaceBorder">
+          <h2 class="font-bold text-white text-base">Add Listing</h2>
+        </div>
+        <form id="admin-listing-form" class="p-5 space-y-4">
+          <div>
+            <label class="block text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-400 mb-2">Property title</label>
+            <input id="new-listing-title" type="text" placeholder="e.g. Walnut Square Condo" class="w-full bg-obsidian border border-surfaceBorder rounded-lg px-3 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:border-indigo-500 focus:outline-none" required>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-400 mb-2">Price</label>
+              <input id="new-listing-price" type="text" placeholder="$2,100/mo" class="w-full bg-obsidian border border-surfaceBorder rounded-lg px-3 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:border-indigo-500 focus:outline-none" required>
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-400 mb-2">Beds</label>
+              <input id="new-listing-beds" type="number" min="0" value="2" class="w-full bg-obsidian border border-surfaceBorder rounded-lg px-3 py-2.5 text-sm text-zinc-100 focus:border-indigo-500 focus:outline-none" required>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-400 mb-2">Baths</label>
+              <input id="new-listing-baths" type="number" min="0" step="0.5" value="2" class="w-full bg-obsidian border border-surfaceBorder rounded-lg px-3 py-2.5 text-sm text-zinc-100 focus:border-indigo-500 focus:outline-none" required>
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-400 mb-2">Sqft</label>
+              <input id="new-listing-sqft" type="number" min="0" value="1200" class="w-full bg-obsidian border border-surfaceBorder rounded-lg px-3 py-2.5 text-sm text-zinc-100 focus:border-indigo-500 focus:outline-none" required>
+            </div>
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-400 mb-2">Description</label>
+            <textarea id="new-listing-description" rows="4" placeholder="Short property overview..." class="w-full bg-obsidian border border-surfaceBorder rounded-lg px-3 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:border-indigo-500 focus:outline-none" required></textarea>
+          </div>
+          <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold uppercase tracking-wider px-4 py-3 rounded-lg transition">
+            Add Listing
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Admin Ticket Table & Dispatch Editor -->
+    <div class="bg-surface rounded-xl border border-surfaceBorder shadow-xl overflow-hidden">
+      <div class="p-5 border-b border-surfaceBorder flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <h2 class="font-bold text-white text-base">Master Maintenance Work Order Queue</h2>
+        <div class="flex items-center gap-2">
+          <span class="text-xs text-zinc-400">Filter:</span>
+          <select id="admin-filter" onchange="renderAdminTickets()" class="text-xs bg-obsidian border border-surfaceBorder rounded-lg px-3 py-1.5 text-zinc-300 focus:outline-none focus:border-indigo-500">
+            <option value="all">All Statuses</option>
+            <option value="open">Open Only</option>
+            <option value="Completed">Completed Only</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="divide-y divide-surfaceBorder" id="admin-tickets-container">
+        <!-- Rendered by JavaScript -->
+      </div>
+    </div>
+  </main>
+
   <!-- ================= FOOTER ================= -->
-  <footer class="bg-surface border-t border-surfaceBorder mt-auto py-8">
+  <footer class="bg-surface mt-auto py-6">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between text-xs text-zinc-500 gap-4">
       <div class="flex items-center space-x-2">
         <span class="font-bold tracking-wider uppercase text-zinc-300">VINCETIGO HOLDINGS</span>
@@ -398,83 +878,1021 @@
     </div>
   </footer>
 
-  <!-- ================= LOGIC & JAVASCRIPT ================= -->
+  <button id="feedback-fab" type="button" onclick="openFeedbackModal()" class="fixed right-5 bottom-28 z-50 inline-flex items-center gap-2 rounded-full bg-indigo-600 text-white px-4 py-3 shadow-xl shadow-indigo-600/30 hover:bg-indigo-500 transition font-bold uppercase tracking-wider text-xs">
+    <i data-lucide="message-circle-more" class="w-4 h-4"></i>
+    <span>Feedback</span>
+  </button>
+
+  <div id="feedback-modal" class="fixed inset-0 z-[70] hidden bg-obsidian/75 backdrop-blur-sm px-4 py-6 overflow-y-auto">
+    <div class="max-w-lg mx-auto mt-8 bg-surface border border-surfaceBorder rounded-2xl shadow-2xl overflow-hidden max-h-[calc(100vh-4rem)] overflow-y-auto">
+      <div class="p-5 border-b border-surfaceBorder flex items-center justify-between gap-4">
+        <div>
+          <div class="text-[10px] uppercase tracking-[0.2em] font-bold text-indigo-400">Resident feedback</div>
+          <h2 class="mt-2 text-2xl font-black text-white">Share your thoughts</h2>
+        </div>
+        <button type="button" onclick="closeFeedbackModal()" class="w-9 h-9 rounded-full bg-obsidian border border-surfaceBorder text-zinc-400 hover:text-white transition">✕</button>
+      </div>
+
+      <form id="feedback-form" class="p-6 space-y-4" onsubmit="submitFeedbackForm(event)">
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wide text-zinc-400 mb-2">Your name</label>
+          <input id="feedback-name" type="text" placeholder="Jane Resident" class="w-full bg-obsidian border border-surfaceBorder rounded-lg px-3 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:border-indigo-500 focus:outline-none" required>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wide text-zinc-400 mb-2">Email</label>
+          <input id="feedback-email" type="email" placeholder="jane@example.com" class="w-full bg-obsidian border border-surfaceBorder rounded-lg px-3 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:border-indigo-500 focus:outline-none" required>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wide text-zinc-400 mb-2">Feedback</label>
+          <textarea id="feedback-message" rows="5" placeholder="Tell us what is working well, what could improve, or what you want to see next..." class="w-full bg-obsidian border border-surfaceBorder rounded-lg px-3 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:border-indigo-500 focus:outline-none" required></textarea>
+        </div>
+
+        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold uppercase tracking-wider py-3 rounded-lg shadow-lg shadow-indigo-600/20 transition">
+          Send feedback
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= LOGIC & REAL-TIME STATE ENGINE ================= -->
   <script>
     lucide.createIcons();
 
-    let tickets = [
+    const listingSeedData = [
       {
-        id: 'VIN-102',
-        title: 'Master bath ventilation motor resonance',
-        category: 'Electrical',
-        priority: 'Standard',
-        status: 'Technician Dispatched',
-        statusColor: 'bg-amber-950/60 text-amber-400 border-amber-500/30',
-        date: 'Sept 12, 2026'
+        id: 'listing-101',
+        title: 'The Spruce Townhouse',
+        price: '$2,250/mo',
+        beds: 2,
+        baths: 2,
+        sqft: 1150,
+        description: 'A refined two-bedroom townhouse in the heart of Center City, offering bright natural light, modern finishes, and effortless access to transit, dining, and nearby green spaces. The home is designed for comfortable urban living with premium fixtures and a flexible layout that accommodates both work and downtime.',
+        images: [
+          'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1200&q=80',
+          'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=1200&q=80',
+          'https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=1200&q=80',
+          'https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=1200&q=80'
+        ]
       },
       {
-        id: 'VIN-101',
-        title: 'Kitchen drainage cycle slow discharge',
-        category: 'Plumbing',
-        priority: 'Urgent',
-        status: 'Contractor Assigned',
-        statusColor: 'bg-indigo-950/60 text-indigo-400 border-indigo-500/30',
-        date: 'Sept 14, 2026'
+        id: 'listing-102',
+        title: 'Fishtown Modern Loft',
+        price: '$1,850/mo',
+        beds: 1,
+        baths: 1,
+        sqft: 820,
+        description: 'This chic loft in Fishtown blends industrial character with updated comfort, including high ceilings, sleek finishes, and a highly walkable neighborhood setting. Ideal for a creative professional or compact household seeking a central location near dining, nightlife, and transit.',
+        images: [
+          'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=1200&q=80',
+          'https://images.unsplash.com/photo-1448630360428-65456885c650?auto=format&fit=crop&w=1200&q=80',
+          'https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=1200&q=80',
+          'https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=1200&q=80'
+        ]
+      },
+      {
+        id: 'listing-103',
+        title: 'Fairmount Contemporary',
+        price: '$2,600/mo',
+        beds: 3,
+        baths: 2.5,
+        sqft: 1400,
+        description: 'A thoughtfully updated residence with elevated materials, generous natural light, and well-proportioned rooms suited for families and professionals alike. Located near Fairmount’s parks, museums, and community amenities, it offers both historic charm and modern convenience in one polished package.',
+        images: [
+          'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80',
+          'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1200&q=80',
+          'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80',
+          'https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=1200&q=80'
+        ]
       }
     ];
 
-    function renderTickets() {
-      const container = document.getElementById('tickets-container');
-      const countBadge = document.getElementById('ticket-count');
-      countBadge.innerText = `${tickets.length} Active`;
+    function getDefaultListingImages() {
+      return [
+        'https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=1200&q=80',
+        'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=1200&q=80',
+        'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80',
+        'https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=1200&q=80'
+      ];
+    }
+
+    function normalizeListing(listing) {
+      if (!listing || !listing.id) return listing;
+
+      return {
+        ...listing,
+        images: Array.isArray(listing.images) && listing.images.length ? listing.images : getDefaultListingImages()
+      };
+    }
+
+    function getStoredListings() {
+      const stored = localStorage.getItem('vincetigo_listings');
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed) && parsed.length) {
+            return parsed.map(normalizeListing).filter(Boolean);
+          }
+        } catch (e) {}
+      }
+      localStorage.setItem('vincetigo_listings', JSON.stringify(listingSeedData.map(normalizeListing)));
+      return listingSeedData.map(normalizeListing);
+    }
+
+    let listingData = getStoredListings();
+
+    function saveListings(data) {
+      listingData = data.map(normalizeListing).filter(Boolean);
+      localStorage.setItem('vincetigo_listings', JSON.stringify(listingData));
+      renderListingCards();
+      renderAdminListings();
+    }
+
+    const listingState = {
+      selectedListingId: null,
+      selectedImageIndex: 0
+    };
+
+    function renderListingCards() {
+      const listingsEl = document.getElementById('property-listings');
+      if (!listingsEl) return;
+
+      listingsEl.innerHTML = listingData.map((listing, index) => {
+        const normalizedListing = normalizeListing(listing) || listing;
+        const images = Array.isArray(normalizedListing.images) && normalizedListing.images.length ? normalizedListing.images : getDefaultListingImages();
+
+        return `
+        <article class="property-card bg-surface rounded-xl border border-surfaceBorder overflow-hidden group hover:border-indigo-500/40 transition duration-300" data-id="${normalizedListing.id}" data-index="${index}" data-price="${Number(String(normalizedListing.price).replace(/[^0-9.-]/g, '') || 0)}" data-neighborhood="center-city" data-bedrooms="${normalizedListing.beds}" data-pets="pet-friendly" data-availability="now">
+          <div class="listing-image-area h-52 relative overflow-hidden cursor-pointer" data-listing-id="${normalizedListing.id}" data-index="${index}" aria-label="Advance listing image">
+            <img src="${images[0]}" alt="${normalizedListing.title}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+            <div class="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-transparent"></div>
+            <span class="absolute top-3 right-3 bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-semibold px-2.5 py-0.5 rounded">Active Lease</span>
+            <button type="button" data-listing-image-prev="${normalizedListing.id}" class="absolute left-3 top-1/2 -translate-y-1/2 z-10 flex h-8 w-8 items-center justify-center rounded-full border border-surfaceBorder bg-surface/80 text-white shadow-md backdrop-blur-sm transition hover:bg-surface" aria-label="Previous image">
+              <i data-lucide="chevron-left" class="w-4 h-4"></i>
+            </button>
+            <button type="button" data-listing-image-next="${normalizedListing.id}" class="absolute right-3 top-1/2 -translate-y-1/2 z-10 flex h-8 w-8 items-center justify-center rounded-full border border-surfaceBorder bg-surface/80 text-white shadow-md backdrop-blur-sm transition hover:bg-surface" aria-label="Next image">
+              <i data-lucide="chevron-right" class="w-4 h-4"></i>
+            </button>
+            <div class="listing-image-counter">1 / ${images.length}</div>
+          </div>
+          <div class="p-6 space-y-3 cursor-pointer" data-open-listing="${normalizedListing.id}">
+            <div class="flex justify-between items-baseline">
+              <h3 class="font-bold text-lg text-white">${normalizedListing.title}</h3>
+              <span class="text-indigo-400 font-bold">${normalizedListing.price}<span class="text-zinc-500 text-xs font-normal">/mo</span></span>
+            </div>
+            <p class="text-zinc-400 text-xs flex items-center gap-1.5">
+              <i data-lucide="map-pin" class="w-3.5 h-3.5 text-indigo-400"></i> Center City, Philadelphia, PA
+            </p>
+            <div class="pt-4 border-t border-surfaceBorder flex justify-between text-xs text-zinc-400">
+              <span>${normalizedListing.beds} Bed</span> • <span>${normalizedListing.baths} Bath</span> • <span>${normalizedListing.sqft} sq ft</span>
+            </div>
+            <div class="flex gap-2 pt-2">
+              <button type="button" data-view-details="${normalizedListing.id}" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold uppercase tracking-wider px-3 py-2.5 rounded-lg transition">View Details</button>
+              <button type="button" onclick="openApplyNowModal('${normalizedListing.title}')" class="flex-1 bg-surface hover:bg-zinc-800 text-zinc-200 border border-surfaceBorder text-xs font-bold uppercase tracking-wider px-3 py-2.5 rounded-lg transition">Apply now</button>
+            </div>
+          </div>
+        </article>
+      `;
+      }).join('');
+
+      listingsEl.querySelectorAll('.listing-image-area').forEach((imageArea) => {
+        imageArea.addEventListener('click', (event) => {
+          const target = event.target;
+          if (target.closest('button')) return;
+          event.stopPropagation();
+          const listingId = imageArea.dataset.listingId;
+          advanceListingImage(listingId);
+        });
+      });
+
+      listingsEl.querySelectorAll('[data-listing-image-prev]').forEach((btn) => {
+        btn.addEventListener('click', (event) => {
+          event.stopPropagation();
+          const listingId = btn.dataset.listingImagePrev;
+          cycleListingImage(listingId, -1);
+        });
+      });
+
+      listingsEl.querySelectorAll('[data-listing-image-next]').forEach((btn) => {
+        btn.addEventListener('click', (event) => {
+          event.stopPropagation();
+          const listingId = btn.dataset.listingImageNext;
+          cycleListingImage(listingId, 1);
+        });
+      });
+
+      listingsEl.querySelectorAll('[data-open-listing]').forEach((cardBody) => {
+        cardBody.addEventListener('click', (event) => {
+          if (event.target.closest('button')) return;
+          const listingId = cardBody.dataset.openListing;
+          openListingDetail(listingId);
+        });
+      });
+
+      listingsEl.querySelectorAll('[data-view-details]').forEach((button) => {
+        button.addEventListener('click', (event) => {
+          event.stopPropagation();
+          openListingDetail(button.dataset.viewDetails);
+        });
+      });
+
+      lucide.createIcons();
+    }
+
+    function cycleListingImage(listingId, direction) {
+      const listing = listingData.find((item) => item.id === listingId);
+      if (!listing) return;
+
+      const imageArea = document.querySelector(`.listing-image-area[data-listing-id="${listingId}"]`);
+      if (!imageArea) return;
+
+      const currentImage = Number(imageArea.dataset.imageIndex || 0);
+      const nextIndex = (currentImage + direction + listing.images.length) % listing.images.length;
+      const imageEl = imageArea.querySelector('img');
+      const counterEl = imageArea.querySelector('.listing-image-counter');
+
+      imageArea.dataset.imageIndex = String(nextIndex);
+      imageEl.src = listing.images[nextIndex];
+      if (counterEl) counterEl.textContent = `${nextIndex + 1} / ${listing.images.length}`;
+    }
+
+    function advanceListingImage(listingId) {
+      cycleListingImage(listingId, 1);
+    }
+
+    function openListingDetail(listingId) {
+      const listing = listingData.find((item) => item.id === listingId);
+      if (!listing) return;
+
+      listingState.selectedListingId = listingId;
+      listingState.selectedImageIndex = 0;
+
+      document.getElementById('detail-main-image').src = listing.images[0];
+      document.getElementById('detail-title').textContent = listing.title;
+      document.getElementById('detail-price').textContent = listing.price;
+      document.getElementById('detail-beds').textContent = listing.beds;
+      document.getElementById('detail-baths').textContent = listing.baths;
+      document.getElementById('detail-sqft').textContent = listing.sqft;
+      document.getElementById('detail-description').textContent = listing.description;
+      document.getElementById('detail-image-counter').textContent = `1 / ${listing.images.length}`;
+
+      const thumbContainer = document.getElementById('detail-thumbs');
+      thumbContainer.innerHTML = listing.images.map((image, index) => `
+        <button type="button" data-detail-thumb="${index}" class="listing-thumb rounded-lg overflow-hidden border ${index === 0 ? 'active' : ''} border-surfaceBorder hover:border-indigo-500/50 transition">
+          <img src="${image}" alt="${listing.title} thumbnail ${index + 1}" class="w-full h-20 object-cover">
+        </button>
+      `).join('');
+
+      thumbContainer.querySelectorAll('[data-detail-thumb]').forEach((thumb) => {
+        thumb.addEventListener('click', () => {
+          const index = Number(thumb.dataset.detailThumb);
+          listingState.selectedImageIndex = index;
+          updateSelectedDetailImage();
+        });
+      });
+
+      document.getElementById('listing-detail-modal').classList.add('active');
+      document.getElementById('listing-detail-modal').style.display = 'flex';
+    }
+
+    function updateSelectedDetailImage() {
+      const listing = listingData.find((item) => item.id === listingState.selectedListingId);
+      if (!listing) return;
+
+      const index = listingState.selectedImageIndex;
+      document.getElementById('detail-main-image').src = listing.images[index];
+      document.getElementById('detail-image-counter').textContent = `${index + 1} / ${listing.images.length}`;
+
+      document.querySelectorAll('.listing-thumb').forEach((thumb) => {
+        thumb.classList.toggle('active', Number(thumb.dataset.detailThumb) === index);
+      });
+    }
+
+    function changeDetailImage(step) {
+      const listing = listingData.find((item) => item.id === listingState.selectedListingId);
+      if (!listing) return;
+
+      listingState.selectedImageIndex = (listingState.selectedImageIndex + step + listing.images.length) % listing.images.length;
+      updateSelectedDetailImage();
+    }
+
+    function closeListingDetail() {
+      const modal = document.getElementById('listing-detail-modal');
+      modal.classList.remove('active');
+      modal.style.display = 'none';
+    }
+
+    const listingDetailModal = document.getElementById('listing-detail-modal');
+    if (listingDetailModal) {
+      listingDetailModal.addEventListener('click', (event) => {
+        if (event.target === listingDetailModal) {
+          closeListingDetail();
+        }
+      });
+
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && listingDetailModal.classList.contains('active')) {
+          closeListingDetail();
+        }
+      });
+    }
+
+    // Default Seed Data
+    const initialTickets = [
+      {
+        id: 'VIN-102',
+        unit: 'Unit 3B (1420 Pine)',
+        title: 'Master bath ventilation motor resonance',
+        category: 'Electrical',
+        priority: 'Standard',
+        status: 'Contractor Dispatched',
+        date: 'Sept 12, 2026',
+        assignee: 'Apex Electricians LLC',
+        notes: 'Tech scheduled for Tuesday window 10am-12pm.'
+      },
+      {
+        id: 'VIN-101',
+        unit: 'Unit 3B (1420 Pine)',
+        title: 'Kitchen drainage cycle slow discharge',
+        category: 'Plumbing',
+        priority: 'Urgent',
+        status: 'In Progress',
+        date: 'Sept 14, 2026',
+        assignee: 'Center City Plumbing Co.',
+        notes: 'Main trap cleared. Technician replacing rubber gaskets.'
+      }
+    ];
+
+    // Local Storage Persistence
+    function getStoredTickets() {
+      const stored = localStorage.getItem('vincetigo_tickets');
+      if (stored) {
+        try { return JSON.parse(stored); } catch (e) { }
+      }
+      localStorage.setItem('vincetigo_tickets', JSON.stringify(initialTickets));
+      return initialTickets;
+    }
+
+    function saveTickets(data) {
+      localStorage.setItem('vincetigo_tickets', JSON.stringify(data));
+      renderTenantTickets();
+      renderAdminTickets();
+      renderStats();
+    }
+
+    let tickets = getStoredTickets();
+
+    // Helper: Style Badges based on status
+    function getStatusBadge(status) {
+      switch (status) {
+        case 'Submitted':
+          return 'bg-zinc-900 text-zinc-300 border-zinc-700';
+        case 'Under Review':
+          return 'bg-purple-950/60 text-purple-400 border-purple-500/30';
+        case 'Contractor Dispatched':
+          return 'bg-amber-950/60 text-amber-400 border-amber-500/30';
+        case 'In Progress':
+          return 'bg-indigo-950/60 text-indigo-400 border-indigo-500/30';
+        case 'Completed':
+          return 'bg-emerald-950/60 text-emerald-400 border-emerald-500/30';
+        default:
+          return 'bg-zinc-900 text-zinc-300 border-zinc-700';
+      }
+    }
+
+    // Render Resident View Tickets
+    function renderTenantTickets() {
+      const container = document.getElementById('tenant-tickets-container');
+      const countEl = document.getElementById('tenant-ticket-count');
+      const activeCount = tickets.filter(t => t.status !== 'Completed').length;
+      
+      countEl.innerText = `${activeCount} Active`;
 
       if (tickets.length === 0) {
-        container.innerHTML = `<div class="p-8 text-center text-zinc-500 text-sm">No active maintenance requests.</div>`;
+        container.innerHTML = `<div class="p-8 text-center text-zinc-500 text-sm">No maintenance requests logged.</div>`;
         return;
       }
 
       container.innerHTML = tickets.map(t => `
-        <div class="p-4 hover:bg-obsidian/40 rounded-lg transition space-y-2">
+        <div class="p-5 hover:bg-obsidian/40 rounded-lg transition space-y-2.5">
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-2">
               <span class="text-xs font-mono font-bold text-zinc-400">${t.id}</span>
-              <span class="text-[10px] uppercase font-bold px-2 py-0.5 rounded border ${t.statusColor}">${t.status}</span>
+              <span class="text-[10px] uppercase font-bold px-2 py-0.5 rounded border ${getStatusBadge(t.status)}">${t.status}</span>
               ${t.priority === 'Urgent' ? '<span class="text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-rose-950/60 text-rose-400 border border-rose-500/30">Urgent</span>' : ''}
             </div>
             <span class="text-xs text-zinc-500 font-mono">${t.date}</span>
           </div>
+
           <h4 class="font-semibold text-zinc-200 text-sm">${t.title}</h4>
-          <p class="text-xs text-zinc-500">Category: <span class="font-medium text-zinc-400">${t.category}</span></p>
+          
+          <div class="flex flex-wrap items-center gap-4 text-xs text-zinc-400 pt-1">
+            <span>Category: <strong class="text-zinc-300">${t.category}</strong></span>
+            ${t.assignee ? `<span>Assigned Trade: <strong class="text-indigo-400">${t.assignee}</strong></span>` : ''}
+          </div>
+
+          ${t.notes ? `
+            <div class="mt-2 bg-obsidian/60 border border-surfaceBorder rounded-lg p-2.5 text-xs text-zinc-300 flex items-start gap-2">
+              <i data-lucide="info" class="w-3.5 h-3.5 text-indigo-400 shrink-0 mt-0.5"></i>
+              <span><strong>Operator Note:</strong> ${t.notes}</span>
+            </div>
+          ` : ''}
         </div>
       `).join('');
+
       lucide.createIcons();
     }
 
-    let inPortal = false;
-    function togglePortal() {
-      inPortal = !inPortal;
-      const publicView = document.getElementById('view-public');
-      const portalView = document.getElementById('view-portal');
-      const btnText = document.getElementById('portal-btn-text');
+    // Render Back-End Admin Management Panel
+    function renderAdminListings() {
+      const container = document.getElementById('admin-listings-container');
+      const countEl = document.getElementById('admin-listing-count');
+      if (!container) return;
 
-      if (inPortal) {
-        publicView.classList.add('hidden');
-        portalView.classList.remove('hidden');
-        btnText.innerText = "Exit Portal (Home)";
-        renderTickets();
-      } else {
-        publicView.classList.remove('hidden');
-        portalView.classList.add('hidden');
-        btnText.innerText = "Resident Portal";
+      if (countEl) countEl.textContent = `${listingData.length} active`;
+
+      container.innerHTML = listingData.map((listing) => {
+        const normalizedListing = normalizeListing(listing) || listing;
+        const images = Array.isArray(normalizedListing.images) && normalizedListing.images.length ? normalizedListing.images : getDefaultListingImages();
+
+        return `
+        <div class="p-4 border-b border-surfaceBorder last:border-b-0">
+          <div class="flex items-center justify-between gap-4">
+            <div class="min-w-0">
+              <div class="text-sm font-semibold text-white truncate">${normalizedListing.title}</div>
+              <div class="mt-1 text-[11px] text-zinc-400">${normalizedListing.price} • ${normalizedListing.beds} bed • ${normalizedListing.baths} bath</div>
+            </div>
+            <button type="button" onclick="removeListing('${normalizedListing.id}')" class="px-3 py-2 text-[10px] font-bold uppercase tracking-wider rounded-lg bg-rose-950/40 border border-rose-500/30 text-rose-300 hover:bg-rose-900/50 transition">
+              Remove
+            </button>
+          </div>
+
+          <div class="mt-4 flex flex-wrap gap-2">
+            ${images.map((image, index) => `
+              <div class="relative w-16 h-16 overflow-hidden rounded-lg border border-surfaceBorder bg-obsidian">
+                <img src="${image}" alt="${normalizedListing.title} photo ${index + 1}" class="w-full h-full object-cover">
+                <button type="button" onclick="removePhotoFromListing('${normalizedListing.id}', ${index})" class="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-rose-500 text-[10px] font-bold text-white shadow-lg shadow-rose-900/40" aria-label="Remove photo">×</button>
+              </div>
+            `).join('')}
+          </div>
+
+          <div class="mt-4 flex gap-2">
+            <input id="photo-url-${normalizedListing.id}" type="url" placeholder="Add photo URL" class="flex-1 bg-obsidian border border-surfaceBorder rounded-lg px-3 py-2 text-xs text-zinc-200 placeholder-zinc-500 focus:border-indigo-500 focus:outline-none">
+            <button type="button" onclick="addPhotoToListing('${normalizedListing.id}', document.getElementById('photo-url-${normalizedListing.id}').value)" class="px-3 py-2 text-[10px] font-bold uppercase tracking-wider rounded-lg bg-indigo-600 text-white hover:bg-indigo-500 transition">
+              Add Photo
+            </button>
+          </div>
+        </div>
+      `;
+      }).join('');
+    }
+
+    function addPhotoToListing(id, rawUrl) {
+      const url = String(rawUrl || '').trim();
+      if (!url) {
+        alert('Paste a photo URL before adding the image.');
+        return;
       }
+
+      const listing = listingData.find((item) => item.id === id);
+      if (!listing) return;
+
+      listing.images = [...(listing.images || []), url];
+      saveListings([...listingData]);
+      showDemoStatus('Photo added to listing.', 'success');
+    }
+
+    function removePhotoFromListing(id, index) {
+      const listing = listingData.find((item) => item.id === id);
+      if (!listing) return;
+
+      if ((listing.images || []).length <= 1) {
+        alert('Each listing must keep at least one photo.');
+        return;
+      }
+
+      listing.images = (listing.images || []).filter((_, photoIndex) => photoIndex !== index);
+      saveListings([...listingData]);
+      showDemoStatus('Photo removed from listing.', 'warning');
+    }
+
+    function removeListing(id) {
+      const nextListings = listingData.filter((listing) => listing.id !== id);
+      if (!nextListings.length) {
+        alert('At least one listing must remain in the portfolio.');
+        return;
+      }
+      saveListings(nextListings);
+      if (listingState.selectedListingId === id) {
+        closeListingDetail();
+      }
+      showDemoStatus('Listing removed from the portfolio.', 'warning');
+    }
+
+    document.getElementById('admin-listing-form')?.addEventListener('submit', (event) => {
+      event.preventDefault();
+
+      const title = document.getElementById('new-listing-title').value.trim();
+      const price = document.getElementById('new-listing-price').value.trim();
+      const beds = Number(document.getElementById('new-listing-beds').value || 0);
+      const baths = Number(document.getElementById('new-listing-baths').value || 0);
+      const sqft = Number(document.getElementById('new-listing-sqft').value || 0);
+      const description = document.getElementById('new-listing-description').value.trim();
+
+      if (!title || !price || !description) {
+        alert('Please complete all listing fields before adding the property.');
+        return;
+      }
+
+      const newListing = {
+        id: `listing-${Date.now()}`,
+        title,
+        price,
+        beds,
+        baths,
+        sqft,
+        description,
+        images: [
+          'https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=1200&q=80',
+          'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=1200&q=80',
+          'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80',
+          'https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=1200&q=80'
+        ]
+      };
+
+      saveListings([...listingData, newListing]);
+      document.getElementById('admin-listing-form').reset();
+      document.getElementById('new-listing-beds').value = 2;
+      document.getElementById('new-listing-baths').value = 2;
+      document.getElementById('new-listing-sqft').value = 1200;
+      showDemoStatus('Listing added to the portfolio.', 'success');
+    });
+
+    function renderAdminTickets() {
+      const container = document.getElementById('admin-tickets-container');
+      const filter = document.getElementById('admin-filter').value;
+
+      let filtered = tickets;
+      if (filter === 'open') {
+        filtered = tickets.filter(t => t.status !== 'Completed');
+      } else if (filter === 'Completed') {
+        filtered = tickets.filter(t => t.status === 'Completed');
+      }
+
+      if (filtered.length === 0) {
+        container.innerHTML = `<div class="p-8 text-center text-zinc-500 text-sm">No work orders match the filter.</div>`;
+        return;
+      }
+
+      container.innerHTML = filtered.map((t, idx) => `
+        <div class="p-6 hover:bg-obsidian/30 transition flex flex-col lg:flex-row gap-6 justify-between items-start">
+          <div class="space-y-2 flex-grow">
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="text-xs font-mono font-bold text-indigo-400">${t.id}</span>
+              <span class="text-xs font-semibold text-zinc-400">• ${t.unit || 'Unit 3B'}</span>
+              <span class="text-[10px] uppercase font-bold px-2 py-0.5 rounded border ${getStatusBadge(t.status)}">${t.status}</span>
+              ${t.priority === 'Urgent' ? '<span class="text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-rose-950/60 text-rose-400 border border-rose-500/30">Urgent Priority</span>' : ''}
+              <span class="text-xs text-zinc-500 font-mono ml-auto lg:ml-0">${t.date}</span>
+            </div>
+
+            <h3 class="text-base font-bold text-white">${t.title}</h3>
+            <p class="text-xs text-zinc-400">Dispatched Trade: <strong class="text-zinc-200">${t.assignee || 'Unassigned'}</strong></p>
+
+            <!-- Quick Inline Operator Notes -->
+            <div class="pt-2">
+              <input 
+                type="text" 
+                value="${t.notes || ''}" 
+                placeholder="Add technician note (visible to tenant)..." 
+                onchange="updateTicketNote('${t.id}', this.value)"
+                class="w-full text-xs bg-obsidian border border-surfaceBorder rounded-lg px-3 py-2 text-zinc-200 focus:outline-none focus:border-indigo-500"
+              />
+            </div>
+          </div>
+
+          <!-- Operator Action Controls -->
+          <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 shrink-0 w-full lg:w-auto">
+            <select onchange="updateTicketStatus('${t.id}', this.value)" class="text-xs bg-obsidian border border-surfaceBorder rounded-lg px-3 py-2 text-zinc-200 focus:outline-none focus:border-indigo-500">
+              <option value="Submitted" ${t.status === 'Submitted' ? 'selected' : ''}>Submitted</option>
+              <option value="Under Review" ${t.status === 'Under Review' ? 'selected' : ''}>Under Review</option>
+              <option value="Contractor Dispatched" ${t.status === 'Contractor Dispatched' ? 'selected' : ''}>Contractor Dispatched</option>
+              <option value="In Progress" ${t.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
+              <option value="Completed" ${t.status === 'Completed' ? 'selected' : ''}>Completed & Closed</option>
+            </select>
+
+            <select onchange="updateTicketAssignee('${t.id}', this.value)" class="text-xs bg-obsidian border border-surfaceBorder rounded-lg px-3 py-2 text-zinc-200 focus:outline-none focus:border-indigo-500">
+              <option value="" ${!t.assignee ? 'selected' : ''}>Assign Trade...</option>
+              <option value="Center City Plumbing" ${t.assignee === 'Center City Plumbing' ? 'selected' : ''}>Plumbing Specialist</option>
+              <option value="Apex Electricians LLC" ${t.assignee === 'Apex Electricians LLC' ? 'selected' : ''}>Electrical Tech</option>
+              <option value="Philly HVAC Pros" ${t.assignee === 'Philly HVAC Pros' ? 'selected' : ''}>HVAC Mechanic</option>
+              <option value="In-House Handyman" ${t.assignee === 'In-House Handyman' ? 'selected' : ''}>In-House Maintenance</option>
+            </select>
+
+            <button onclick="deleteTicket('${t.id}')" class="px-2.5 py-2 text-xs font-semibold bg-rose-950/40 border border-rose-500/30 text-rose-400 hover:bg-rose-900/50 rounded-lg transition" title="Delete work order">
+              <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+        </div>
+      `).join('');
+
+      lucide.createIcons();
+    }
+
+    // Stats Bar
+    function renderStats() {
+      document.getElementById('stat-total').innerText = tickets.length;
+      document.getElementById('stat-pending').innerText = tickets.filter(t => t.status === 'Submitted' || t.status === 'Under Review').length;
+      document.getElementById('stat-progress').innerText = tickets.filter(t => t.status === 'Contractor Dispatched' || t.status === 'In Progress').length;
+      document.getElementById('stat-completed').innerText = tickets.filter(t => t.status === 'Completed').length;
+    }
+
+    // Admin Dispatch Update Functions
+    function updateTicketStatus(id, newStatus) {
+      tickets = tickets.map(t => t.id === id ? { ...t, status: newStatus } : t);
+      saveTickets(tickets);
+    }
+
+    function updateTicketAssignee(id, assignee) {
+      tickets = tickets.map(t => t.id === id ? { ...t, assignee: assignee } : t);
+      saveTickets(tickets);
+    }
+
+    function updateTicketNote(id, noteText) {
+      tickets = tickets.map(t => t.id === id ? { ...t, notes: noteText } : t);
+      saveTickets(tickets);
+    }
+
+    function deleteTicket(id) {
+      if (confirm(`Are you sure you want to permanently delete record ${id}?`)) {
+        tickets = tickets.filter(t => t.id !== id);
+        saveTickets(tickets);
+      }
+    }
+
+    function resetDemoData() {
+      if (confirm("Reset ticket state back to default demo records?")) {
+        tickets = [...initialTickets];
+        saveTickets(tickets);
+      }
+    }
+
+    // Resident Form Submission
+    function handleTenantSubmit(e) {
+      e.preventDefault();
+      const title = document.getElementById('ticket-title').value;
+      const category = document.getElementById('ticket-category').value;
+      const priority = document.getElementById('ticket-priority').value;
+      const desc = document.getElementById('ticket-desc').value;
+
+      const newTicket = {
+        id: 'VIN-' + (Math.floor(Math.random() * 900) + 100),
+        unit: 'Unit 3B (1420 Pine)',
+        title: title,
+        category: category,
+        priority: priority,
+        status: 'Submitted',
+        date: 'Today',
+        assignee: '',
+        notes: desc ? `Tenant Note: ${desc}` : ''
+      };
+
+      tickets.unshift(newTicket);
+      saveTickets(tickets);
+      document.getElementById('maintenance-form').reset();
+      alert(`Incident order ${newTicket.id} logged. Vincetigo operations dispatch notified.`);
+    }
+
+    // View Routing Controllers
+    let inPortal = false;
+    let inAdmin = false;
+    window.inPortal = false;
+    window.inAdmin = false;
+
+    function openResidentLoginModal() {
+      const modal = document.getElementById('resident-login-modal');
+      if (modal) modal.classList.remove('hidden');
+    }
+
+    function closeResidentLoginModal() {
+      const modal = document.getElementById('resident-login-modal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function toggleResidentHelpForm() {
+      const loginView = document.getElementById('resident-login-view');
+      const helpView = document.getElementById('resident-help-view');
+
+      if (loginView && helpView) {
+        loginView.classList.toggle('hidden');
+        helpView.classList.toggle('hidden');
+      }
+    }
+
+    function submitResidentHelpRequest() {
+      const helpEmail = document.getElementById('resident-help-email').value.trim();
+      const helpSubject = document.getElementById('resident-help-subject').value.trim();
+      const helpMessage = document.getElementById('resident-help-message').value.trim();
+
+      if (!helpEmail || !helpSubject || !helpMessage) {
+        alert('Please complete the email, subject, and message fields before sending your inquiry.');
+        return;
+      }
+
+      const mailtoLink = `mailto:ben@vincetigo.com?subject=${encodeURIComponent(helpSubject)}&body=${encodeURIComponent(
+        `Resident email: ${helpEmail}\n\n${helpMessage}`
+      )}`;
+
+      window.location.href = mailtoLink;
+      alert('Your inquiry has been prepared in your email app.');
+      toggleResidentHelpForm();
+      document.getElementById('resident-login-form').reset();
+    }
+
+    function openFeedbackModal() {
+      const modal = document.getElementById('feedback-modal');
+      if (modal) modal.classList.remove('hidden');
+    }
+
+    function closeFeedbackModal() {
+      const modal = document.getElementById('feedback-modal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function submitFeedbackForm(event) {
+      event.preventDefault();
+
+      const name = document.getElementById('feedback-name').value.trim();
+      const email = document.getElementById('feedback-email').value.trim();
+      const message = document.getElementById('feedback-message').value.trim();
+
+      if (!name || !email || !message) {
+        alert('Please complete all feedback fields before submitting.');
+        return;
+      }
+
+      const subject = encodeURIComponent('Tenant feedback submission');
+      const body = encodeURIComponent(
+        `Name: ${name}\nEmail: ${email}\n\nFeedback:\n${message}`
+      );
+
+      window.location.href = `mailto:ben@vincetigo.com?subject=${subject}&body=${body}`;
+      alert('Your feedback has been prepared in your email app.');
+      closeFeedbackModal();
+      document.getElementById('feedback-form').reset();
+    }
+
+    function showDemoStatus(message, tone = 'success') {
+      const toast = document.getElementById('demo-status-toast');
+      const toastText = document.getElementById('demo-status-text');
+      if (!toast || !toastText) return;
+
+      toastText.textContent = message;
+      toast.classList.remove('hidden', 'border-emerald-500/40', 'bg-emerald-500/10', 'text-emerald-100', 'border-amber-500/40', 'bg-amber-500/10', 'text-amber-100');
+
+      if (tone === 'success') {
+        toast.classList.add('border-emerald-500/40', 'bg-emerald-500/10', 'text-emerald-100');
+      } else if (tone === 'warning') {
+        toast.classList.add('border-amber-500/40', 'bg-amber-500/10', 'text-amber-100');
+      }
+
+      toast.classList.remove('hidden');
+      clearTimeout(window.demoStatusTimeout);
+      window.demoStatusTimeout = setTimeout(() => {
+        toast.classList.add('hidden');
+      }, 2600);
+    }
+
+    function setPortalSuccessBanner(message, visible = true) {
+      const banner = document.getElementById('portal-success-banner');
+      const bannerText = document.getElementById('portal-success-banner-text');
+      if (!banner || !bannerText) return;
+
+      bannerText.textContent = message;
+      banner.classList.toggle('hidden', !visible);
+    }
+
+    function startResidentDemo() {
+      const emailInput = document.getElementById('resident-email');
+      const passwordInput = document.getElementById('resident-password');
+      if (emailInput) emailInput.value = 'resident@test.vincetigo.com';
+      if (passwordInput) passwordInput.value = 'Demo123!';
+      handleResidentLogin({ preventDefault() {} });
+    }
+
+    function handleResidentLogin(event) {
+      event?.preventDefault?.();
+
+      const emailInput = document.getElementById('resident-email');
+      const passwordInput = document.getElementById('resident-password');
+      const email = emailInput ? emailInput.value : '';
+      const password = passwordInput ? passwordInput.value : '';
+
+      const acceptedEmails = new Set([
+        'resident@test.vincetigo.com',
+        'resident@vincetigo.com',
+        'unit3b@vincetigo.com'
+      ]);
+      const acceptedPasswords = new Set([
+        'Demo123!',
+        'demo123!'
+      ]);
+
+      const normalizedEmail = String(email).trim().toLowerCase().replace(/\s+/g, '');
+      const normalizedPassword = String(password).trim();
+
+      if (!normalizedEmail || !normalizedPassword) {
+        alert('Please enter your resident credentials to continue.');
+        return;
+      }
+
+      const validResident = acceptedEmails.has(normalizedEmail) && acceptedPasswords.has(normalizedPassword);
+
+      if (!validResident) {
+        alert('Invalid resident credentials. Please use the demo resident access flow.');
+        return;
+      }
+
+      closeResidentLoginModal();
+      inPortal = true;
+      inAdmin = false;
+      window.inPortal = true;
+      window.inAdmin = false;
+      setPortalSuccessBanner('Resident access confirmed. You are now signed in to the portal.');
+      showDemoStatus('Resident access confirmed. Portal unlocked.');
+      updateViewVisibility();
+
+      const residentForm = document.getElementById('resident-login-form');
+      if (residentForm) residentForm.reset();
+    }
+
+    function resetDemoSession() {
+      inPortal = false;
+      inAdmin = false;
+      window.inPortal = false;
+      window.inAdmin = false;
+      bankLinked = false;
+
+      const balanceEl = document.getElementById('portal-balance');
+      const plaidStatusEl = document.getElementById('plaid-status-text');
+      const plaidButton = document.getElementById('plaid-btn');
+      const autopayToggle = document.getElementById('autopay-toggle');
+      const autopayLabel = document.getElementById('autopay-label');
+
+      if (balanceEl) balanceEl.textContent = '$2,150.00';
+      if (plaidStatusEl) plaidStatusEl.textContent = 'Link Bank (Plaid ACH)';
+      if (plaidButton) plaidButton.classList.remove('border-emerald-500/40', 'text-emerald-400');
+      if (autopayToggle) autopayToggle.checked = false;
+      if (autopayLabel) {
+        autopayLabel.textContent = 'Autopay Off';
+        autopayLabel.classList.remove('text-indigo-400');
+      }
+
+      setPortalSuccessBanner('Resident access confirmed. You are now signed in to the portal.', false);
+      closeResidentLoginModal();
+      if (document.getElementById('resident-login-form')) document.getElementById('resident-login-form').reset();
+      if (document.getElementById('resident-help-view')) document.getElementById('resident-help-view').classList.add('hidden');
+      if (document.getElementById('resident-login-view')) document.getElementById('resident-login-view').classList.remove('hidden');
+      updateViewVisibility();
+      showDemoStatus('Demo session reset. You are back to the public view.', 'warning');
+    }
+
+    function togglePortal() {
+      if (!inPortal) {
+        openResidentLoginModal();
+        return;
+      }
+
+      inPortal = false;
+      inAdmin = false;
+      window.inPortal = false;
+      window.inAdmin = false;
+      setPortalSuccessBanner('Resident access confirmed. You are now signed in to the portal.', false);
+      updateViewVisibility();
+    }
+
+    function toggleAdminView() {
+      inAdmin = !inAdmin;
+      inPortal = false;
+      window.inAdmin = inAdmin;
+      window.inPortal = inPortal;
+      updateViewVisibility();
     }
 
     function switchView(view) {
-      if (view === 'public' && inPortal) {
-        togglePortal();
+      if (view === 'public') {
+        inPortal = false;
+        inAdmin = false;
+        window.inPortal = false;
+        window.inAdmin = false;
+        setPortalSuccessBanner('Resident access confirmed. You are now signed in to the portal.', false);
+        updateViewVisibility();
       }
     }
 
+    function updateViewVisibility() {
+      window.inPortal = !!inPortal;
+      window.inAdmin = !!inAdmin;
+
+      const publicView = document.getElementById('view-public');
+      const portalView = document.getElementById('view-portal');
+      const adminView = document.getElementById('view-admin');
+      const portalBtnText = document.getElementById('portal-btn-text');
+      const adminBtnText = document.getElementById('admin-btn-text');
+
+      if (publicView) publicView.classList.add('hidden');
+      if (portalView) portalView.classList.add('hidden');
+      if (adminView) adminView.classList.add('hidden');
+
+      if (inAdmin) {
+        if (adminView) adminView.classList.remove('hidden');
+        if (adminBtnText) adminBtnText.innerText = "Exit Admin";
+        if (portalBtnText) portalBtnText.innerText = "Resident Portal";
+        renderAdminListings();
+        renderAdminTickets();
+        renderStats();
+      } else if (inPortal) {
+        if (portalView) portalView.classList.remove('hidden');
+        if (portalBtnText) portalBtnText.innerText = "Home View";
+        if (adminBtnText) adminBtnText.innerText = "Admin Dispatch";
+        renderTenantTickets();
+      } else {
+        if (publicView) publicView.classList.remove('hidden');
+        if (portalBtnText) portalBtnText.innerText = "Resident Portal";
+        if (adminBtnText) adminBtnText.innerText = "Admin Dispatch";
+      }
+    }
+
+    function openApplyNowModal(selectedUnit = '') {
+      const select = document.getElementById('apply-unit-select');
+      if (select) {
+        const cards = document.querySelectorAll('.property-card h3');
+        const options = [...cards].map(card => `<option value="${card.textContent.trim()}">${card.textContent.trim()}</option>`).join('');
+        select.innerHTML = options;
+        if (selectedUnit) {
+          select.value = selectedUnit;
+        } else if (options) {
+          select.value = cards[0].textContent.trim();
+        }
+      }
+
+      const modal = document.getElementById('apply-modal');
+      const stepOne = document.getElementById('apply-step-1');
+      const stepTwo = document.getElementById('apply-step-2');
+      if (modal) modal.classList.remove('hidden');
+      if (stepOne) stepOne.classList.remove('hidden');
+      if (stepTwo) stepTwo.classList.add('hidden');
+    }
+
+    function closeApplyNowModal() {
+      const modal = document.getElementById('apply-modal');
+      if (modal) modal.classList.add('hidden');
+      const form = document.getElementById('site-application-form');
+      if (form) form.reset();
+      const stepOne = document.getElementById('apply-step-1');
+      const stepTwo = document.getElementById('apply-step-2');
+      if (stepOne) stepOne.classList.remove('hidden');
+      if (stepTwo) stepTwo.classList.add('hidden');
+    }
+
+    function submitApplicationFlow() {
+      const selectedUnit = document.getElementById('apply-unit-select').value;
+      const applicantName = document.getElementById('applicant-name').value.trim();
+      const email = document.getElementById('applicant-email').value.trim();
+      const income = document.getElementById('monthly-income').value.trim();
+
+      if (!selectedUnit || !applicantName || !email || !income) {
+        alert('Please complete the required applicant details before submitting.');
+        return;
+      }
+
+      const stepOne = document.getElementById('apply-step-1');
+      const stepTwo = document.getElementById('apply-step-2');
+      const nameSummary = document.getElementById('application-summary-name');
+      const unitSummary = document.getElementById('application-summary-unit');
+
+      if (nameSummary) nameSummary.textContent = applicantName;
+      if (unitSummary) unitSummary.textContent = `${selectedUnit} • Documents reviewed for income threshold check`;
+
+      if (stepOne) stepOne.classList.add('hidden');
+      if (stepTwo) stepTwo.classList.remove('hidden');
+    }
+
+    function triggerBackgroundCheck() {
+      const applicantName = document.getElementById('applicant-name').value.trim() || 'Applicant';
+      const selectedUnit = document.getElementById('apply-unit-select').value || 'selected unit';
+      alert(`Background screening invite triggered for ${applicantName} for ${selectedUnit}. This would send the SmartMove / RentSpree email invite after admin approval.`);
+      closeApplyNowModal();
+    }
+
+    function resetListingFilters() {
+      ['filter-price', 'filter-neighborhood', 'filter-bedrooms', 'filter-pets', 'filter-availability'].forEach(id => {
+        const field = document.getElementById(id);
+        if (field) field.value = 'all';
+      });
+      updatePropertyFilters();
+      document.getElementById('properties').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // Tabs inside Resident Portal
     function switchTab(tabId) {
       document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
       document.getElementById(tabId).classList.add('active');
@@ -491,58 +1909,149 @@
       }
     }
 
-    function handleTicketSubmit(e) {
-      e.preventDefault();
-      const title = document.getElementById('ticket-title').value;
-      const category = document.getElementById('ticket-category').value;
-      const priority = document.getElementById('ticket-priority').value;
+    // Plaid Integration
+    let bankLinked = false;
+    const plaidDemoResponse = {
+      item: {
+        institution_name: 'Navy Federal Credit Union',
+        item_id: 'z7bbK3Vx7GhVjRlvodAGFoyap1LRD8uEeWXE4'
+      },
+      accounts: [
+        {
+          account_id: 'QKkkBn6gKdIvbNmZGDkzhbePeXeGkjcwwwNdK',
+          name: 'Plaid Checking',
+          subtype: 'checking',
+          balances: { available: 100, current: 110 }
+        },
+        {
+          account_id: 'ZNJJ736DNZTvr3GWJNgLhXjKjmjMDgceeeojM',
+          name: 'Plaid Saving',
+          subtype: 'savings',
+          balances: { available: 200, current: 210 }
+        },
+        {
+          account_id: 'MAmmqk6GAzu3dPGojBK1iDWqWMW3vafLLLjoq',
+          name: 'Plaid Cash Management',
+          subtype: 'cash management',
+          balances: { available: 12060, current: 12060 }
+        }
+      ]
+    };
 
-      const newTicket = {
-        id: 'VIN-' + (Math.floor(Math.random() * 900) + 100),
-        title: title,
-        category: category,
-        priority: priority,
-        status: 'Submitted',
-        statusColor: 'bg-zinc-900 text-zinc-300 border-zinc-700',
-        date: 'Just now'
-      };
+    function applyPlaidDemoState(payload = plaidDemoResponse) {
+      const sourceAccounts = payload?.accounts || plaidDemoResponse.accounts || [];
+      const institutionName = payload?.item?.institution_name || plaidDemoResponse.item.institution_name;
+      const demoTotal = sourceAccounts.reduce((sum, account) => sum + (Number(account.balances?.available) || 0), 0);
+      bankLinked = true;
 
-      tickets.unshift(newTicket);
-      renderTickets();
-      document.getElementById('maintenance-form').reset();
-      alert(`Incident report ${newTicket.id} logged. Property dispatch alerted.`);
+      const statusEl = document.getElementById('plaid-status-text');
+      const btn = document.getElementById('plaid-btn');
+      const autopayLabel = document.getElementById('autopay-label');
+      const balanceEl = document.getElementById('portal-balance');
+
+      if (statusEl) statusEl.innerText = `${institutionName} • Active`;
+      if (btn) btn.classList.add('border-emerald-500/40', 'text-emerald-400');
+      if (autopayLabel) {
+        autopayLabel.innerText = 'Autopay Active (1st of Mo)';
+        autopayLabel.classList.add('text-indigo-400');
+      }
+      if (balanceEl) {
+        balanceEl.innerText = `$${demoTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+      }
+
+      alert('Plaid linked successfully. Navy Federal Credit Union is now connected to the resident payment portal.');
     }
 
-    let bankLinked = false;
-    function triggerPlaidLink() {
+    async function triggerPlaidLink() {
       if (bankLinked) {
-        alert("Plaid Link: Chase (...4821) token is active.");
+        alert("Plaid Link: Bank account is already connected to Stripe.");
         return;
       }
-      const confirmLink = confirm("[Plaid Link Encrypted Protocol]\n\nAuthorize direct bank token connection via Plaid API?\n\nClick OK to simulate verified connection.");
-      if (confirmLink) {
-        bankLinked = true;
-        document.getElementById('plaid-status-text').innerText = "Chase (...4821) Active";
-        const btn = document.getElementById('plaid-btn');
-        btn.classList.add('border-emerald-500/40', 'text-emerald-400');
-        alert("Bank account linked via Plaid Auth. ACH direct debits enabled.");
+
+      try {
+        const linkTokenResponse = await fetch('/api/create_link_token', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+
+        if (!linkTokenResponse.ok) {
+          throw new Error('Plaid Link token creation failed');
+        }
+
+        const linkTokenData = await linkTokenResponse.json();
+        if (!linkTokenData.link_token || !window.Plaid) {
+          throw new Error('Plaid Link is unavailable');
+        }
+
+        const plaidHandler = window.Plaid.create({
+          token: linkTokenData.link_token,
+          onSuccess: async (publicToken, metadata) => {
+            const accountId = metadata.accounts?.[0]?.id;
+            if (!accountId) {
+              throw new Error('No Plaid account was selected');
+            }
+
+            const exchangeResponse = await fetch('/api/set_access_token', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ public_token: publicToken, account_id: accountId })
+            });
+
+            if (!exchangeResponse.ok) {
+              const errorData = await exchangeResponse.json().catch(() => ({}));
+              throw new Error(errorData.error || 'Plaid to Stripe connection failed');
+            }
+
+            bankLinked = true;
+            document.getElementById('plaid-status-text').innerText = 'Bank account • Connected to Stripe';
+            document.getElementById('plaid-btn').classList.add('border-emerald-500/40', 'text-emerald-400');
+            alert('Bank account linked to Stripe successfully.');
+          },
+          onExit: (error) => {
+            if (error) console.warn('Plaid Link exited with an error.', error);
+          }
+        });
+
+        plaidHandler.open();
+      } catch (error) {
+        console.warn('Plaid to Stripe connection failed; using demo fallback.', error);
+        applyPlaidDemoState();
       }
     }
 
-    function triggerStripeCheckout() {
+    // Stripe Checkout
+    async function triggerStripeCheckout() {
       const balanceEl = document.getElementById('portal-balance');
       if (balanceEl.innerText === "$0.00") {
-        alert("Current balance is $0.00. No ledger adjustments required.");
+        alert('Current balance is $0.00. No ledger adjustments required.');
         return;
       }
 
-      const proceed = confirm("[Stripe Checkout Gateway]\n\nRouting to secure Stripe ACH/Card processing for $2,150.00.\n\nClick OK to simulate settled transfer.");
-      if (proceed) {
-        balanceEl.innerText = "$0.00";
-        alert("Transfer authorized. Stripe transaction #ch_vincetigo_9281 logged. Receipt sent.");
+      try {
+        const response = await fetch('/api/create-checkout-session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ amount: 215000 })
+        });
+
+        if (!response.ok) {
+          throw new Error('Checkout endpoint unavailable');
+        }
+
+        const data = await response.json();
+        if (data.url) {
+          window.location.href = data.url;
+          return;
+        }
+
+        throw new Error('No checkout URL returned');
+      } catch (error) {
+        console.error('Stripe Checkout could not be opened.', error);
+        alert('Stripe Checkout is unavailable. Confirm the backend is running with npm start, then try again.');
       }
     }
 
+    // Autopay Toggle
     function toggleAutopay(checkbox) {
       const label = document.getElementById('autopay-label');
       if (checkbox.checked) {
@@ -553,6 +2062,67 @@
         label.classList.remove('text-indigo-400');
       }
     }
+
+    function updatePropertyFilters() {
+      const priceValue = document.getElementById('filter-price').value;
+      const neighborhoodValue = document.getElementById('filter-neighborhood').value;
+      const bedroomsValue = document.getElementById('filter-bedrooms').value;
+      const petsValue = document.getElementById('filter-pets').value;
+      const availabilityValue = document.getElementById('filter-availability').value;
+
+      const cards = document.querySelectorAll('.property-card');
+      let visibleCount = 0;
+
+      cards.forEach(card => {
+        const price = Number(card.dataset.price);
+        const neighborhood = card.dataset.neighborhood;
+        const bedrooms = Number(card.dataset.bedrooms);
+        const pets = card.dataset.pets;
+        const availability = card.dataset.availability;
+
+        const matchesPrice =
+          priceValue === 'all' ||
+          (priceValue === 'under-2000' && price < 2000) ||
+          (priceValue === '2000-2500' && price >= 2000 && price <= 2500) ||
+          (priceValue === '2500-plus' && price > 2500);
+
+        const matchesNeighborhood = neighborhoodValue === 'all' || neighborhood === neighborhoodValue;
+        const matchesBedrooms = bedroomsValue === 'all' || bedrooms === Number(bedroomsValue);
+        const matchesPets = petsValue === 'all' || pets === petsValue;
+        const matchesAvailability = availabilityValue === 'all' || availability === availabilityValue;
+
+        const visible = matchesPrice && matchesNeighborhood && matchesBedrooms && matchesPets && matchesAvailability;
+        card.style.display = visible ? '' : 'none';
+        if (visible) visibleCount++;
+      });
+
+      if (visibleCount === 0) {
+        const list = document.getElementById('property-listings');
+        let emptyState = document.getElementById('property-empty-state');
+        if (!emptyState) {
+          emptyState = document.createElement('div');
+          emptyState.id = 'property-empty-state';
+          emptyState.className = 'col-span-full text-center rounded-2xl border border-dashed border-surfaceBorder bg-surface p-10 text-zinc-400';
+          emptyState.innerHTML = 'No listings match your current filter combination. Try widening the search criteria.';
+          list.appendChild(emptyState);
+        }
+        emptyState.style.display = 'block';
+      } else {
+        const emptyState = document.getElementById('property-empty-state');
+        if (emptyState) emptyState.style.display = 'none';
+      }
+    }
+
+    ['filter-price', 'filter-neighborhood', 'filter-bedrooms', 'filter-pets', 'filter-availability'].forEach(id => {
+      document.getElementById(id).addEventListener('change', updatePropertyFilters);
+    });
+
+    // Initial Load
+    renderListingCards();
+    renderTenantTickets();
+    renderStats();
+    updatePropertyFilters();
+    closeListingDetail();
   </script>
 </body>
 </html>
