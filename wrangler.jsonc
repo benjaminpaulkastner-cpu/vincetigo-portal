@@ -1,10 +1,10 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "vincetigo-portal-api",
-  "main": "./worker.js",
+  "main": "./untitled folder/worker.js",
   "compatibility_date": "2026-09-29",
   "assets": {
-    "directory": "./"
+    "directory": "./untitled folder"
   },
   "vars": {
     "PLAID_ENV": "sandbox"
