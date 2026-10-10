@@ -8,9 +8,27 @@ const bindings = {
   PLAID_CLIENT_ID: 'PLAID_CLIENT_ID',
   PLAID_SECRET: 'PLAID_SECRET',
   PLAID_ENV: 'PLAID_ENV',
+  FRONTEND_ORIGINS: 'FRONTEND_ORIGINS',
+  PUBLIC_APP_URL: 'PUBLIC_APP_URL',
 };
 
-app.use('*', cors({ origin: '*' }));
+function configuredOrigins(env) {
+  const configured = (env[bindings.FRONTEND_ORIGINS] || '')
+    .split(',')
+    .map((origin) => origin.trim());
+
+  return [
+    ...configured,
+    'http://localhost:5502',
+    'http://127.0.0.1:5502',
+  ].filter(Boolean);
+}
+
+app.use('*', async (c, next) => cors({
+  origin: (origin) => configuredOrigins(c.env).includes(origin) ? origin : '',
+  allowMethods: ['GET', 'POST', 'OPTIONS'],
+  allowHeaders: ['Content-Type', 'Authorization'],
+})(c, next));
 
 function requireBinding(env, name) {
   const value = env[name];
@@ -163,27 +181,32 @@ app.post('/api/set_access_token', async (c) => {
   }
 });
 
+const RENTAL_UNITS = new Map([
+  ['unit-3b', { label: 'Unit 3B', rentCents: 215000 }],
+]);
+
 async function createCheckoutSession(c) {
   try {
     const body = await c.req.json().catch(() => ({}));
-    const amount = Number(body.amount || 150000);
-    if (!Number.isInteger(amount) || amount <= 0) {
-      return c.json({ error: 'amount must be a positive integer in cents' }, 400);
+    const unitId = typeof body?.unitId === 'string' ? body.unitId.trim().toLowerCase() : '';
+    const unit = RENTAL_UNITS.get(unitId);
+    if (!unit) {
+      return c.json({ error: 'Unknown or missing unitId' }, 400);
     }
 
-    const appUrl = c.env.PUBLIC_APP_URL || new URL(c.req.url).origin;
+    const appUrl = requireBinding(c.env, bindings.PUBLIC_APP_URL).replace(/\/+$/, '');
     const session = await stripeRequest(c.env, 'checkout/sessions', {
       'payment_method_types[0]': 'card',
       'line_items[0][price_data][currency]': 'usd',
-      'line_items[0][price_data][product_data][name]': 'Rent Payment - Unit 3B',
-      'line_items[0][price_data][unit_amount]': amount,
+      'line_items[0][price_data][product_data][name]': `Rent Payment - ${unit.label}`,
+      'line_items[0][price_data][unit_amount]': unit.rentCents,
       'line_items[0][quantity]': 1,
       mode: 'payment',
-      success_url: `${appUrl}/?payment=success`,
-      cancel_url: `${appUrl}/?payment=cancelled`,
+      success_url: `${appUrl}/resident-portal/?payment=success`,
+      cancel_url: `${appUrl}/resident-portal/?payment=cancelled`,
     });
 
-    return c.json({ url: session.url });
+    return c.json({ sessionId: session.id, url: session.url });
   } catch (error) {
     return jsonError(c, error);
   }

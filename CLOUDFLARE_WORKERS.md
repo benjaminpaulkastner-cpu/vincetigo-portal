@@ -5,10 +5,17 @@ The Cloudflare entrypoint is `worker.js`. It preserves these routes:
 - `GET /api/health`
 - `POST /api/create_link_token`
 - `POST /api/set_access_token`
+- `POST /api/checkout`
 - `POST /api/create-checkout-session`
 - `POST /api/charge-rent`
 
 The Worker calls Stripe and Plaid over their HTTPS APIs. This avoids Node-only SDK runtime dependencies and is compatible with Cloudflare Workers' web-standard `fetch` runtime.
+
+## Secure Stripe Checkout
+
+The resident portal sends only a `unitId`. The Worker looks up the rent amount in `worker.js`; it never accepts a client-provided amount. The current mapping is `unit-3b` to 215000 cents ($2,150). Add future units to `RENTAL_UNITS` in the Worker.
+
+The production API uses the custom domain `https://api.vincetigo.com`. The Pages site calls that domain directly, and the Worker CORS allowlist is configured by `FRONTEND_ORIGINS` in `wrangler.jsonc`.
 
 ## 1. Install and authenticate
 
@@ -19,43 +26,23 @@ npm install
 npx wrangler login
 ```
 
-## 2. Configure CORS and environment
+## 2. Configure the Stripe secret and frontend origins
 
-The Worker always allows local Live Server origins:
-
-- `http://127.0.0.1:5500`
-- `http://localhost:5500`
-
-Set the deployed frontend origin before deploying. Replace the example domain with the real domain:
+Store the Stripe key as a Worker secret. Wrangler prompts for the value; do not put the key in HTML, JavaScript, `wrangler.jsonc`, or a committed `.env` file:
 
 ```bash
-npx wrangler secret put FRONTEND_ORIGIN
-# enter: http://127.0.0.1:5500
-
-npx wrangler secret put LIVE_FRONTEND_ORIGIN
-# enter: https://your-live-frontend.example.com
-
 npx wrangler secret put STRIPE_SECRET_KEY
-npx wrangler secret put PLAID_CLIENT_ID
-npx wrangler secret put PLAID_SECRET
 ```
 
-For sandbox testing, keep this in `wrangler.jsonc`:
+Use an `sk_test_...` key while testing and an `sk_live_...` key only for production. Local Wrangler development can read `STRIPE_SECRET_KEY` from the git-ignored `.dev.vars` file:
 
-```json
-"PLAID_ENV": "sandbox"
+```dotenv
+STRIPE_SECRET_KEY="sk_test_..."
 ```
 
-For production, change it to `production` and use production Plaid credentials plus a Stripe live secret key. Do not mix sandbox Plaid credentials with production credentials.
+`FRONTEND_ORIGINS` and `PUBLIC_APP_URL` are public configuration, not secrets. They are set in `wrangler.jsonc`; adjust `FRONTEND_ORIGINS` if the Pages site uses another production or preview hostname. The Worker also allows the local Live Server origins on port 5502.
 
-You can set the URL Stripe uses after Checkout with:
-
-```bash
-npx wrangler secret put PUBLIC_APP_URL
-# enter: https://your-live-frontend.example.com
-```
-
-The default is the request origin, so this binding is optional for local testing.
+The `routes` configuration provisions `api.vincetigo.com` as a Worker custom domain. The `vincetigo.com` zone must be active in the same Cloudflare account as the Worker.
 
 ## 3. Run locally
 
@@ -71,14 +58,16 @@ Wrangler prints a local URL, normally `http://localhost:8787`. Test health:
 curl http://localhost:8787/api/health
 ```
 
-The frontend must call the deployed Worker origin when it is hosted separately. For example:
+The portal sends this request; the amount is resolved by the Worker:
 
-```js
-const API_BASE_URL = 'https://vincetigo-portal-api.<your-subdomain>.workers.dev';
-fetch(`${API_BASE_URL}/api/create-checkout-session`, { ... });
+```bash
+curl -i http://127.0.0.1:8787/api/checkout \
+  -H 'Origin: http://127.0.0.1:5502' \
+  -H 'Content-Type: application/json' \
+  --data '{"unitId":"unit-3b"}'
 ```
 
-When frontend and Worker share the same origin through a custom route, relative `/api/...` URLs continue to work.
+The response contains `sessionId` and `url`. The browser redirects to `url`, which is hosted by Stripe. Requests with unknown unit IDs return `400`; submitting an `amount` has no effect.
 
 ## 4. Deploy
 
@@ -86,7 +75,7 @@ When frontend and Worker share the same origin through a custom route, relative 
 npm run worker:deploy
 ```
 
-Wrangler prints the deployed `workers.dev` URL. Use that URL as `API_BASE_URL` if the frontend is hosted elsewhere.
+After deployment, the API is available at `https://api.vincetigo.com/api/checkout`. The static Pages frontend calls this URL directly. Keep Stripe in test mode until the deployed flow has been verified.
 
 ## Cloudflare Dashboard alternative
 
@@ -98,10 +87,9 @@ Wrangler prints the deployed `workers.dev` URL. Use that URL as `API_BASE_URL` i
    - Secret `PLAID_CLIENT_ID`
    - Secret `PLAID_SECRET`
    - Variable `PLAID_ENV` with `sandbox` or `production`
-   - Variable `FRONTEND_ORIGIN` with the local or primary frontend origin
-   - Variable `LIVE_FRONTEND_ORIGIN` with the live frontend origin
-   - Optional variable `PUBLIC_APP_URL` for Stripe success/cancel redirects
-5. Deploy, then copy the Worker URL into the frontend API base URL if the frontend is on another host.
+    - Variable `FRONTEND_ORIGINS` with comma-separated allowed origins, such as `https://vincetigo.com,https://www.vincetigo.com`
+    - Variable `PUBLIC_APP_URL` with `https://vincetigo.com`
+5. Configure the Worker custom domain `api.vincetigo.com`, deploy, and keep the Stripe secret in the Worker Secrets settings.
 
 ## Route payloads
 

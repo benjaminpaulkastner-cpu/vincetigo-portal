@@ -6,7 +6,15 @@
   "assets": {
     "directory": "./"
   },
+  "routes": [
+    {
+      "pattern": "api.vincetigo.com",
+      "custom_domain": true
+    }
+  ],
   "vars": {
-    "PLAID_ENV": "sandbox"
+    "PLAID_ENV": "sandbox",
+    "FRONTEND_ORIGINS": "https://vincetigo.com,https://www.vincetigo.com",
+    "PUBLIC_APP_URL": "https://vincetigo.com"
   }
 }

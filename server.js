@@ -32,7 +32,7 @@ app.options(/.*/, cors());
 app.use(express.json());
 
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'untitled folder', 'website4.html'));
+  res.sendFile(path.join(__dirname, 'resident-portal', 'index.html'));
 });
 
 app.get('/api/test-unit', (req, res) => {
@@ -125,8 +125,8 @@ app.post('/api/create-checkout-session', async (req, res) => {
         },
       ],
       mode: 'payment',
-      success_url: 'http://localhost:3000/untitled%20folder/website4.html#properties',
-      cancel_url: 'http://localhost:3000/untitled%20folder/website4.html#properties',
+      success_url: 'http://localhost:3000/resident-portal/#properties',
+      cancel_url: 'http://localhost:3000/resident-portal/#properties',
     });
 
     res.json({ url: session.url });

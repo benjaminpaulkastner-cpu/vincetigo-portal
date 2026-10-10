@@ -4,6 +4,7 @@
   "main": "worker.js",
   "compatibility_date": "2026-09-29",
   "vars": {
-    "PLAID_ENV": "sandbox"
+    "PLAID_ENV": "sandbox",
+    "PUBLIC_APP_URL": "http://127.0.0.1:5502"
   }
 }

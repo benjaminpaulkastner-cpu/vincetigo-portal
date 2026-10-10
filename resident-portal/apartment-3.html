@@ -4,12 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="icon" href="/assets/vincetigo-logo.jpeg" type="image/jpeg" sizes="768x768" />
-  <title>VINCETIGO | Property Management & Asset Portal</title>
+  <title>VINCETIGO | Apartment 3 Resident Portal</title>
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
-  <script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
   <script>
     tailwind.config = {
       darkMode: 'class',
@@ -131,7 +130,7 @@
 
           <div>
             <label class="block text-xs font-semibold uppercase tracking-wide text-zinc-400 mb-2">Email or unit</label>
-            <input id="resident-email" type="text" placeholder="you@example.com or Unit 3B" class="w-full bg-obsidian border border-surfaceBorder rounded-lg px-3 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:border-indigo-500 focus:outline-none" required>
+            <input id="resident-email" type="text" placeholder="you@example.com or Apartment 3" class="w-full bg-obsidian border border-surfaceBorder rounded-lg px-3 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:border-indigo-500 focus:outline-none" required>
           </div>
           <div>
             <label class="block text-xs font-semibold uppercase tracking-wide text-zinc-400 mb-2">Password</label>
@@ -517,7 +516,7 @@
               </div>
 
               <div class="h-[300px] md:h-[360px] overflow-hidden rounded-[18px] bg-[#0e1320]">
-                <img src="/untitled%20folder/headshot.jpeg" alt="Ben Kastner portrait" class="h-full w-full object-cover object-[center_15%]" />
+                <img src="/resident-portal/headshot.jpeg" alt="Ben Kastner portrait" class="h-full w-full object-cover object-[center_15%]" />
               </div>
             </div>
 
@@ -565,7 +564,7 @@
       <div>
         <span class="text-xs font-bold uppercase tracking-widest text-indigo-400">Secure Resident Interface</span>
         <h1 class="text-2xl font-black text-white mt-0.5">Resident Portal</h1>
-        <p class="text-xs text-zinc-400">Unit 3B • Address undisclosed, Philadelphia</p>
+        <p id="resident-unit-label" class="text-xs text-zinc-400">Apartment 3 • Address undisclosed, Philadelphia</p>
       </div>
       <div class="flex gap-2">
         <button onclick="switchTab('payment-tab')" id="tab-btn-payment" class="px-4 py-2 text-xs font-bold uppercase tracking-wider rounded-lg bg-indigo-600 text-white shadow-lg shadow-indigo-600/20 transition">
@@ -582,21 +581,21 @@
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div class="md:col-span-2 bg-surface rounded-xl border border-surfaceBorder p-6 shadow-xl flex flex-col justify-between">
           <div class="space-y-1">
-            <span class="text-xs font-bold uppercase tracking-wider text-zinc-400">Monthly Balance Due</span>
-            <div class="text-4xl font-black text-white tracking-tight" id="portal-balance">$2,150.00</div>
+            <span id="balance-label" class="text-xs font-bold uppercase tracking-wider text-zinc-400">Monthly Balance Due</span>
+            <div class="text-4xl font-black text-white tracking-tight" id="portal-balance">$900.00</div>
             <p class="text-xs text-amber-400 flex items-center gap-1.5 pt-1">
               <i data-lucide="clock" class="w-3.5 h-3.5"></i> Standard due date on the 1st of the month
             </p>
           </div>
 
           <div class="pt-6 border-t border-surfaceBorder flex flex-wrap gap-3 items-center">
-            <button onclick="triggerStripeCheckout()" class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider shadow-lg shadow-indigo-600/20 transition">
+            <a id="rent-payment-link" href="https://buy.stripe.com/8x23cudtuf8h1vAaZA4F201" data-default-href="https://buy.stripe.com/8x23cudtuf8h1vAaZA4F201" class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider shadow-lg shadow-indigo-600/20 transition">
               <i data-lucide="credit-card" class="w-4 h-4"></i>
-              Pay Balance (Stripe Gateway)
-            </button>
-            <button onclick="triggerPlaidLink()" id="plaid-btn" class="inline-flex items-center gap-2 bg-obsidian hover:bg-zinc-900 text-zinc-200 border border-surfaceBorder px-4 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider transition">
+              <span id="rent-payment-label">Pay Balance (Stripe Gateway)</span>
+            </a>
+            <button type="button" disabled title="Bank payments are unavailable on static unit pages" class="inline-flex items-center gap-2 bg-obsidian text-zinc-500 border border-surfaceBorder px-4 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider cursor-not-allowed">
               <i data-lucide="landmark" class="w-4 h-4 text-indigo-400"></i>
-              <span id="plaid-status-text">Link Bank (Plaid ACH)</span>
+              <span>Bank Payments Unavailable</span>
             </button>
           </div>
         </div>
@@ -607,17 +606,10 @@
             <div class="w-8 h-8 rounded-lg bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 flex items-center justify-center mb-3">
               <i data-lucide="zap" class="w-4 h-4"></i>
             </div>
-            <h3 class="font-bold text-white text-sm">Automated Settlement</h3>
+            <h3 class="font-bold text-white text-sm">Secure Online Payments</h3>
             <p class="text-xs text-zinc-400 mt-1 leading-relaxed">
-              Enable automated direct debits via Plaid Auth and Stripe to maintain perfect ledger standing.
+              Payments are handled on a Stripe-hosted Payment Link. Bank linking and automatic debits are unavailable on this static page.
             </p>
-          </div>
-          <div class="pt-4">
-            <label class="relative inline-flex items-center cursor-pointer">
-              <input id="autopay-toggle" type="checkbox" class="sr-only peer" onchange="toggleAutopay(this)">
-              <div class="w-11 h-6 bg-zinc-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
-              <span class="ml-3 text-xs font-semibold text-zinc-400" id="autopay-label">Autopay Off</span>
-            </label>
           </div>
         </div>
       </div>
@@ -626,7 +618,7 @@
       <div class="bg-surface rounded-xl border border-surfaceBorder shadow-xl overflow-hidden">
         <div class="p-5 border-b border-surfaceBorder flex justify-between items-center">
           <h2 class="font-bold text-white text-sm">Verified Transaction Ledger</h2>
-          <span class="text-xs text-zinc-400">Audited via Stripe ACH</span>
+          <span class="text-xs text-zinc-400">Sample payment history</span>
         </div>
         <div class="divide-y divide-surfaceBorder text-sm">
           <div class="p-4 flex items-center justify-between">
@@ -636,11 +628,11 @@
               </div>
               <div>
                 <p class="font-medium text-white">Monthly Rent - Settled</p>
-                <p class="text-xs text-zinc-400">Aug 1, 2026 • Plaid Auth (Chase ...4821)</p>
+                <p class="text-xs text-zinc-400">Aug 1, 2026 • Sample card payment</p>
               </div>
             </div>
             <div class="text-right">
-              <p class="font-semibold text-white">$2,150.00</p>
+              <p class="font-semibold text-white">$900.00</p>
               <span class="text-xs text-emerald-400 font-mono">REC-8841</span>
             </div>
           </div>
@@ -651,11 +643,11 @@
               </div>
               <div>
                 <p class="font-medium text-white">Monthly Rent - Settled</p>
-                <p class="text-xs text-zinc-400">Jul 1, 2026 • Plaid Auth (Chase ...4821)</p>
+                <p class="text-xs text-zinc-400">Jul 1, 2026 • Sample card payment</p>
               </div>
             </div>
             <div class="text-right">
-              <p class="font-semibold text-white">$2,150.00</p>
+              <p class="font-semibold text-white">$900.00</p>
               <span class="text-xs text-emerald-400 font-mono">REC-7210</span>
             </div>
           </div>
@@ -1173,7 +1165,7 @@
     const initialTickets = [
       {
         id: 'VIN-102',
-        unit: 'Unit 3B (Address undisclosed)',
+        unit: 'Apartment 3 (Address undisclosed)',
         title: 'Master bath ventilation motor resonance',
         category: 'Electrical',
         priority: 'Standard',
@@ -1184,7 +1176,7 @@
       },
       {
         id: 'VIN-101',
-        unit: 'Unit 3B (Address undisclosed)',
+        unit: 'Apartment 3 (Address undisclosed)',
         title: 'Kitchen drainage cycle slow discharge',
         category: 'Plumbing',
         priority: 'Urgent',
@@ -1237,7 +1229,7 @@
       const container = document.getElementById('tenant-tickets-container');
       const countEl = document.getElementById('tenant-ticket-count');
       const activeCount = tickets.filter(t => t.status !== 'Completed').length;
-      
+
       countEl.innerText = `${activeCount} Active`;
 
       if (tickets.length === 0) {
@@ -1257,7 +1249,7 @@
           </div>
 
           <h4 class="font-semibold text-zinc-200 text-sm">${t.title}</h4>
-          
+
           <div class="flex flex-wrap items-center gap-4 text-xs text-zinc-400 pt-1">
             <span>Category: <strong class="text-zinc-300">${t.category}</strong></span>
             ${t.assignee ? `<span>Assigned Trade: <strong class="text-indigo-400">${t.assignee}</strong></span>` : ''}
@@ -1421,7 +1413,7 @@
           <div class="space-y-2 flex-grow">
             <div class="flex items-center gap-2 flex-wrap">
               <span class="text-xs font-mono font-bold text-indigo-400">${t.id}</span>
-              <span class="text-xs font-semibold text-zinc-400">• ${t.unit || 'Unit 3B'}</span>
+              <span class="text-xs font-semibold text-zinc-400">• ${t.unit || 'Apartment 3'}</span>
               <span class="text-[10px] uppercase font-bold px-2 py-0.5 rounded border ${getStatusBadge(t.status)}">${t.status}</span>
               ${t.priority === 'Urgent' ? '<span class="text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-rose-950/60 text-rose-400 border border-rose-500/30">Urgent Priority</span>' : ''}
               <span class="text-xs text-zinc-500 font-mono ml-auto lg:ml-0">${t.date}</span>
@@ -1432,10 +1424,10 @@
 
             <!-- Quick Inline Operator Notes -->
             <div class="pt-2">
-              <input 
-                type="text" 
-                value="${t.notes || ''}" 
-                placeholder="Add technician note (visible to tenant)..." 
+              <input
+                type="text"
+                value="${t.notes || ''}"
+                placeholder="Add technician note (visible to tenant)..."
                 onchange="updateTicketNote('${t.id}', this.value)"
                 class="w-full text-xs bg-obsidian border border-surfaceBorder rounded-lg px-3 py-2 text-zinc-200 focus:outline-none focus:border-indigo-500"
               />
@@ -1518,7 +1510,7 @@
 
       const newTicket = {
         id: 'VIN-' + (Math.floor(Math.random() * 900) + 100),
-        unit: 'Unit 3B (Address undisclosed)',
+        unit: 'Apartment 3 (Address undisclosed)',
         title: title,
         category: category,
         priority: priority,
@@ -1537,6 +1529,14 @@
     // View Routing Controllers
     let inPortal = false;
     let inAdmin = false;
+    const apartment2DepositLink = 'https://buy.stripe.com/9B600i1KMe4d0rw2t44F200';
+    const defaultResidentPaymentState = {
+      unit: document.getElementById('resident-unit-label').textContent,
+      balanceLabel: document.getElementById('balance-label').textContent,
+      balance: document.getElementById('portal-balance').textContent,
+      paymentHref: document.getElementById('rent-payment-link').getAttribute('href'),
+      paymentLabel: document.getElementById('rent-payment-label').textContent,
+    };
     window.inPortal = false;
     window.inAdmin = false;
 
@@ -1662,7 +1662,7 @@
       const acceptedEmails = new Set([
         'resident@test.vincetigo.com',
         'resident@vincetigo.com',
-        'unit3b@vincetigo.com'
+        'apartment3@vincetigo.com'
       ]);
       const acceptedPasswords = new Set([
         'Demo123!',
@@ -1684,6 +1684,12 @@
         return;
       }
 
+      document.getElementById('resident-unit-label').textContent = 'Apartment 2 • Address undisclosed, Philadelphia';
+      document.getElementById('balance-label').textContent = 'Security Deposit Due';
+      document.getElementById('portal-balance').textContent = '$1,200.00';
+      document.getElementById('rent-payment-link').href = apartment2DepositLink;
+      document.getElementById('rent-payment-label').textContent = 'Pay Security Deposit';
+
       closeResidentLoginModal();
       inPortal = true;
       inAdmin = false;
@@ -1702,22 +1708,15 @@
       inAdmin = false;
       window.inPortal = false;
       window.inAdmin = false;
-      bankLinked = false;
-
+      document.getElementById('resident-unit-label').textContent = defaultResidentPaymentState.unit;
+      document.getElementById('balance-label').textContent = defaultResidentPaymentState.balanceLabel;
       const balanceEl = document.getElementById('portal-balance');
-      const plaidStatusEl = document.getElementById('plaid-status-text');
-      const plaidButton = document.getElementById('plaid-btn');
-      const autopayToggle = document.getElementById('autopay-toggle');
-      const autopayLabel = document.getElementById('autopay-label');
+      const paymentLink = document.getElementById('rent-payment-link');
+      const paymentLabel = document.getElementById('rent-payment-label');
 
-      if (balanceEl) balanceEl.textContent = '$2,150.00';
-      if (plaidStatusEl) plaidStatusEl.textContent = 'Link Bank (Plaid ACH)';
-      if (plaidButton) plaidButton.classList.remove('border-emerald-500/40', 'text-emerald-400');
-      if (autopayToggle) autopayToggle.checked = false;
-      if (autopayLabel) {
-        autopayLabel.textContent = 'Autopay Off';
-        autopayLabel.classList.remove('text-indigo-400');
-      }
+      if (balanceEl) balanceEl.textContent = defaultResidentPaymentState.balance;
+      if (paymentLink) paymentLink.href = defaultResidentPaymentState.paymentHref;
+      if (paymentLabel) paymentLabel.textContent = defaultResidentPaymentState.paymentLabel;
 
       setPortalSuccessBanner('Resident access confirmed. You are now signed in to the portal.', false);
       closeResidentLoginModal();
@@ -1879,166 +1878,6 @@
       } else {
         maintBtn.className = "px-4 py-2 text-xs font-bold uppercase tracking-wider rounded-lg bg-indigo-600 text-white shadow-lg shadow-indigo-600/20 transition";
         payBtn.className = "px-4 py-2 text-xs font-bold uppercase tracking-wider rounded-lg bg-surface text-zinc-300 border border-surfaceBorder hover:bg-zinc-800 transition";
-      }
-    }
-
-    // Plaid Integration
-    let bankLinked = false;
-    const plaidDemoResponse = {
-      item: {
-        institution_name: 'Navy Federal Credit Union',
-        item_id: 'z7bbK3Vx7GhVjRlvodAGFoyap1LRD8uEeWXE4'
-      },
-      accounts: [
-        {
-          account_id: 'QKkkBn6gKdIvbNmZGDkzhbePeXeGkjcwwwNdK',
-          name: 'Plaid Checking',
-          subtype: 'checking',
-          balances: { available: 100, current: 110 }
-        },
-        {
-          account_id: 'ZNJJ736DNZTvr3GWJNgLhXjKjmjMDgceeeojM',
-          name: 'Plaid Saving',
-          subtype: 'savings',
-          balances: { available: 200, current: 210 }
-        },
-        {
-          account_id: 'MAmmqk6GAzu3dPGojBK1iDWqWMW3vafLLLjoq',
-          name: 'Plaid Cash Management',
-          subtype: 'cash management',
-          balances: { available: 12060, current: 12060 }
-        }
-      ]
-    };
-
-    function applyPlaidDemoState(payload = plaidDemoResponse) {
-      const sourceAccounts = payload?.accounts || plaidDemoResponse.accounts || [];
-      const institutionName = payload?.item?.institution_name || plaidDemoResponse.item.institution_name;
-      const demoTotal = sourceAccounts.reduce((sum, account) => sum + (Number(account.balances?.available) || 0), 0);
-      bankLinked = true;
-
-      const statusEl = document.getElementById('plaid-status-text');
-      const btn = document.getElementById('plaid-btn');
-      const autopayLabel = document.getElementById('autopay-label');
-      const balanceEl = document.getElementById('portal-balance');
-
-      if (statusEl) statusEl.innerText = `${institutionName} • Active`;
-      if (btn) btn.classList.add('border-emerald-500/40', 'text-emerald-400');
-      if (autopayLabel) {
-        autopayLabel.innerText = 'Autopay Active (1st of Mo)';
-        autopayLabel.classList.add('text-indigo-400');
-      }
-      if (balanceEl) {
-        balanceEl.innerText = `$${demoTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-      }
-
-      alert('Plaid linked successfully. Navy Federal Credit Union is now connected to the resident payment portal.');
-    }
-
-    async function triggerPlaidLink() {
-      if (bankLinked) {
-        alert("Plaid Link: Bank account is already connected to Stripe.");
-        return;
-      }
-
-      try {
-        const linkTokenResponse = await fetch('/api/create_link_token', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' }
-        });
-
-        if (!linkTokenResponse.ok) {
-          throw new Error('Plaid Link token creation failed');
-        }
-
-        const linkTokenData = await linkTokenResponse.json();
-        if (!linkTokenData.link_token || !window.Plaid) {
-          throw new Error('Plaid Link is unavailable');
-        }
-
-        const plaidHandler = window.Plaid.create({
-          token: linkTokenData.link_token,
-          onSuccess: async (publicToken, metadata) => {
-            const accountId = metadata.accounts?.[0]?.id;
-            if (!accountId) {
-              throw new Error('No Plaid account was selected');
-            }
-
-            const exchangeResponse = await fetch('/api/set_access_token', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ public_token: publicToken, account_id: accountId })
-            });
-
-            if (!exchangeResponse.ok) {
-              const errorData = await exchangeResponse.json().catch(() => ({}));
-              throw new Error(errorData.error || 'Plaid to Stripe connection failed');
-            }
-
-            bankLinked = true;
-            document.getElementById('plaid-status-text').innerText = 'Bank account • Connected to Stripe';
-            document.getElementById('plaid-btn').classList.add('border-emerald-500/40', 'text-emerald-400');
-            alert('Bank account linked to Stripe successfully.');
-          },
-          onExit: (error) => {
-            if (error) console.warn('Plaid Link exited with an error.', error);
-          }
-        });
-
-        plaidHandler.open();
-      } catch (error) {
-        console.warn('Plaid to Stripe connection failed; using demo fallback.', error);
-        applyPlaidDemoState();
-      }
-    }
-
-    // Stripe Checkout
-    async function triggerStripeCheckout() {
-      const balanceEl = document.getElementById('portal-balance');
-      if (balanceEl.innerText === "$0.00") {
-        alert('Current balance is $0.00. No ledger adjustments required.');
-        return;
-      }
-
-      try {
-        const localHost = window.location.hostname;
-        const checkoutUrl = ['localhost', '127.0.0.1'].includes(localHost)
-          ? `http://${localHost}:8787/api/checkout`
-          : '/api/checkout';
-        const response = await fetch(checkoutUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ amount: 215000 })
-        });
-
-        const data = await response.json().catch(() => ({}));
-        if (!response.ok) {
-          throw new Error(data.error || `Checkout request failed (${response.status})`);
-        }
-
-        if (data.url) {
-          window.location.href = data.url;
-          return;
-        }
-
-        throw new Error('No checkout URL returned');
-      } catch (error) {
-        console.error('Stripe Checkout could not be opened.', error);
-        alert(error instanceof TypeError
-          ? 'Could not reach the checkout API. For local development, start the Worker with npm run worker:dev.'
-          : `Stripe Checkout is unavailable. Please try again later. ${error.message || ''}`);
-      }
-    }
-
-    // Autopay Toggle
-    function toggleAutopay(checkbox) {
-      const label = document.getElementById('autopay-label');
-      if (checkbox.checked) {
-        label.innerText = "Autopay Active (1st of Mo)";
-        label.classList.add('text-indigo-400');
-      } else {
-        label.innerText = "Autopay Off";
-        label.classList.remove('text-indigo-400');
       }
     }
 
