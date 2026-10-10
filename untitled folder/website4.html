@@ -2001,8 +2001,9 @@
       }
 
       try {
-        const checkoutUrl = ['localhost', '127.0.0.1'].includes(window.location.hostname)
-          ? 'http://localhost:8787/api/checkout'
+        const localHost = window.location.hostname;
+        const checkoutUrl = ['localhost', '127.0.0.1'].includes(localHost)
+          ? `http://${localHost}:8787/api/checkout`
           : '/api/checkout';
         const response = await fetch(checkoutUrl, {
           method: 'POST',
@@ -2023,7 +2024,9 @@
         throw new Error('No checkout URL returned');
       } catch (error) {
         console.error('Stripe Checkout could not be opened.', error);
-        alert(`Stripe Checkout is unavailable. Please try again later. ${error.message || ''}`);
+        alert(error instanceof TypeError
+          ? 'Could not reach the checkout API. For local development, start the Worker with npm run worker:dev.'
+          : `Stripe Checkout is unavailable. Please try again later. ${error.message || ''}`);
       }
     }
 

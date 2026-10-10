@@ -8,29 +8,9 @@ const bindings = {
   PLAID_CLIENT_ID: 'PLAID_CLIENT_ID',
   PLAID_SECRET: 'PLAID_SECRET',
   PLAID_ENV: 'PLAID_ENV',
-  FRONTEND_ORIGIN: 'FRONTEND_ORIGIN',
-  LIVE_FRONTEND_ORIGIN: 'LIVE_FRONTEND_ORIGIN',
 };
 
-function configuredOrigins(env) {
-  return [
-    'http://127.0.0.1:5500',
-    'http://localhost:5500',
-    'http://127.0.0.1:5501',
-    'http://localhost:5501',
-    env[bindings.FRONTEND_ORIGIN],
-    env[bindings.LIVE_FRONTEND_ORIGIN],
-  ].filter(Boolean);
-}
-
-app.use('*', async (c, next) => {
-  const origins = configuredOrigins(c.env);
-  return cors({
-    origin: (origin) => origins.includes(origin) ? origin : '',
-    allowMethods: ['GET', 'POST', 'OPTIONS'],
-    allowHeaders: ['Content-Type', 'Authorization'],
-  })(c, next);
-});
+app.use('*', cors({ origin: '*' }));
 
 function requireBinding(env, name) {
   const value = env[name];
@@ -203,7 +183,7 @@ async function createCheckoutSession(c) {
       cancel_url: `${appUrl}/?payment=cancelled`,
     });
 
-    return c.json({ url: session.url, id: session.id });
+    return c.json({ url: session.url });
   } catch (error) {
     return jsonError(c, error);
   }
