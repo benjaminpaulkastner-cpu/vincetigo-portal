@@ -7,8 +7,6 @@ const { Resend } = require('resend');
 const { Configuration, PlaidApi, PlaidEnvironments } = require('plaid');
 
 const app = express();
-const maintenanceMode = process.env.MAINTENANCE_MODE === 'true';
-const betaAccessKey = process.env.BETA_ACCESS_KEY || '';
 const testData = require('./seed');
 
 const allowedOrigins = new Set([
@@ -32,18 +30,6 @@ app.use(cors({
 app.options(/.*/, cors());
 
 app.use(express.json());
-
-app.use((req, res, next) => {
-  const isApiRequest = req.path.startsWith('/api/');
-  const providedBetaKey = req.headers['x-beta-access'] || req.query.beta;
-  const hasBetaAccess = betaAccessKey && providedBetaKey === betaAccessKey;
-
-  if (!maintenanceMode || isApiRequest || hasBetaAccess) {
-    return next();
-  }
-
-  return res.status(503).sendFile(path.join(__dirname, 'index.html'));
-});
 
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'untitled folder', 'website4.html'));

@@ -111,9 +111,9 @@
       </nav>
 
       <div class="flex items-center space-x-3 justify-self-end">
-        <button onclick="openApplyNowModal()" class="inline-flex items-center gap-2 bg-surface hover:bg-zinc-800 text-zinc-200 border border-surfaceBorder text-xs font-bold uppercase tracking-wider px-3 py-2 rounded-lg transition">
+        <button type="button" disabled title="Applications will open when listings are available" class="inline-flex items-center gap-2 bg-surface text-zinc-500 border border-surfaceBorder text-xs font-bold uppercase tracking-wider px-3 py-2 rounded-lg cursor-not-allowed">
           <i data-lucide="file-check-2" class="w-3.5 h-3.5 text-indigo-400"></i>
-          <span>Apply Now</span>
+          <span>Leasing Coming Soon</span>
         </button>
 
         <button id="admin-btn" onclick="toggleAdminView()" class="inline-flex items-center gap-2 bg-surface hover:bg-zinc-800 text-zinc-200 border border-surfaceBorder text-xs font-bold uppercase tracking-wider px-3 py-2 rounded-lg transition">
@@ -337,7 +337,7 @@
         </p>
         <div class="pt-4 flex flex-col sm:flex-row justify-center gap-4">
           <a href="#properties" class="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm px-6 py-3 rounded-lg shadow-lg shadow-indigo-600/20 transition">
-            View Current Holdings
+            View Upcoming Listings
           </a>
           <button onclick="togglePortal()" class="bg-surface hover:bg-zinc-800 text-zinc-200 border border-surfaceBorder font-semibold text-sm px-6 py-3 rounded-lg transition">
             Resident Access
@@ -351,7 +351,7 @@
       <div class="flex items-center justify-between mb-6 gap-4 flex-wrap">
         <div>
           <span class="text-xs font-bold uppercase tracking-widest text-indigo-400">Holdings</span>
-          <h2 class="text-2xl font-black text-white mt-1">Featured Residences</h2>
+          <h2 class="text-2xl font-black text-white mt-1">Coming Soon Residences</h2>
         </div>
         <button type="button" onclick="resetListingFilters()" class="text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-indigo-400 cursor-pointer transition">Browse All Units &rarr;</button>
       </div>
@@ -398,7 +398,6 @@
             <span class="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-2">Availability</span>
             <select id="filter-availability" class="w-full bg-obsidian border border-surfaceBorder rounded-lg px-3 py-2 text-sm text-zinc-200 outline-none focus:border-indigo-500">
               <option value="all">Any Date</option>
-              <option value="now">Available Now</option>
               <option value="soon">Available Soon</option>
             </select>
           </label>
@@ -451,8 +450,8 @@
               </div>
 
               <div class="mt-8 flex gap-3">
-                <button type="button" onclick="openApplyNowModal(document.getElementById('detail-title').textContent.trim())" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-bold uppercase tracking-wider px-4 py-3 rounded-lg transition">
-                  Apply now
+                <button type="button" disabled title="Applications will open when listings are available" class="flex-1 bg-indigo-950 text-indigo-300 border border-indigo-500/30 font-bold uppercase tracking-wider px-4 py-3 rounded-lg cursor-not-allowed">
+                  Applications Coming Soon
                 </button>
                 <button type="button" onclick="closeListingDetail()" class="flex-1 bg-zinc-900 hover:bg-zinc-800 text-zinc-200 border border-surfaceBorder font-bold uppercase tracking-wider px-4 py-3 rounded-lg transition">
                   Close
@@ -592,7 +591,7 @@
       <div>
         <span class="text-xs font-bold uppercase tracking-widest text-indigo-400">Secure Resident Interface</span>
         <h1 class="text-2xl font-black text-white mt-0.5">Resident Portal</h1>
-        <p class="text-xs text-zinc-400">Unit 3B • 1420 Pine Street, Center City, Philadelphia</p>
+        <p class="text-xs text-zinc-400">Unit 3B • Address undisclosed, Philadelphia</p>
       </div>
       <div class="flex gap-2">
         <button onclick="switchTab('payment-tab')" id="tab-btn-payment" class="px-4 py-2 text-xs font-bold uppercase tracking-wider rounded-lg bg-indigo-600 text-white shadow-lg shadow-indigo-600/20 transition">
@@ -1021,11 +1020,11 @@
         const images = Array.isArray(normalizedListing.images) && normalizedListing.images.length ? normalizedListing.images : getDefaultListingImages();
 
         return `
-        <article class="property-card bg-surface rounded-xl border border-surfaceBorder overflow-hidden group hover:border-indigo-500/40 transition duration-300" data-id="${normalizedListing.id}" data-index="${index}" data-price="${Number(String(normalizedListing.price).replace(/[^0-9.-]/g, '') || 0)}" data-neighborhood="center-city" data-bedrooms="${normalizedListing.beds}" data-pets="pet-friendly" data-availability="now">
+        <article class="property-card bg-surface rounded-xl border border-surfaceBorder overflow-hidden group hover:border-indigo-500/40 transition duration-300" data-id="${normalizedListing.id}" data-index="${index}" data-price="${Number(String(normalizedListing.price).replace(/[^0-9.-]/g, '') || 0)}" data-neighborhood="center-city" data-bedrooms="${normalizedListing.beds}" data-pets="pet-friendly" data-availability="soon">
           <div class="listing-image-area h-52 relative overflow-hidden cursor-pointer" data-listing-id="${normalizedListing.id}" data-index="${index}" aria-label="Advance listing image">
             <img src="${images[0]}" alt="${normalizedListing.title}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
             <div class="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-transparent"></div>
-            <span class="absolute top-3 right-3 bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-semibold px-2.5 py-0.5 rounded">Active Lease</span>
+            <span class="absolute top-3 right-3 bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-semibold px-2.5 py-0.5 rounded">Coming Soon</span>
             <button type="button" data-listing-image-prev="${normalizedListing.id}" class="absolute left-3 top-1/2 -translate-y-1/2 z-10 flex h-8 w-8 items-center justify-center rounded-full border border-surfaceBorder bg-surface/80 text-white shadow-md backdrop-blur-sm transition hover:bg-surface" aria-label="Previous image">
               <i data-lucide="chevron-left" class="w-4 h-4"></i>
             </button>
@@ -1040,14 +1039,14 @@
               <span class="text-indigo-400 font-bold">${normalizedListing.price}<span class="text-zinc-500 text-xs font-normal">/mo</span></span>
             </div>
             <p class="text-zinc-400 text-xs flex items-center gap-1.5">
-              <i data-lucide="map-pin" class="w-3.5 h-3.5 text-indigo-400"></i> Center City, Philadelphia, PA
+              <i data-lucide="map-pin" class="w-3.5 h-3.5 text-indigo-400"></i> Address undisclosed · Philadelphia, PA
             </p>
             <div class="pt-4 border-t border-surfaceBorder flex justify-between text-xs text-zinc-400">
               <span>${normalizedListing.beds} Bed</span> • <span>${normalizedListing.baths} Bath</span> • <span>${normalizedListing.sqft} sq ft</span>
             </div>
             <div class="flex gap-2 pt-2">
               <button type="button" data-view-details="${normalizedListing.id}" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold uppercase tracking-wider px-3 py-2.5 rounded-lg transition">View Details</button>
-              <button type="button" onclick="openApplyNowModal('${normalizedListing.title}')" class="flex-1 bg-surface hover:bg-zinc-800 text-zinc-200 border border-surfaceBorder text-xs font-bold uppercase tracking-wider px-3 py-2.5 rounded-lg transition">Apply now</button>
+              <button type="button" disabled title="Applications will open when listings are available" class="flex-1 bg-surface text-zinc-500 border border-surfaceBorder text-xs font-bold uppercase tracking-wider px-3 py-2.5 rounded-lg cursor-not-allowed">Applications coming soon</button>
             </div>
           </div>
         </article>
@@ -1200,7 +1199,7 @@
     const initialTickets = [
       {
         id: 'VIN-102',
-        unit: 'Unit 3B (1420 Pine)',
+        unit: 'Unit 3B (Address undisclosed)',
         title: 'Master bath ventilation motor resonance',
         category: 'Electrical',
         priority: 'Standard',
@@ -1211,7 +1210,7 @@
       },
       {
         id: 'VIN-101',
-        unit: 'Unit 3B (1420 Pine)',
+        unit: 'Unit 3B (Address undisclosed)',
         title: 'Kitchen drainage cycle slow discharge',
         category: 'Plumbing',
         priority: 'Urgent',
@@ -1545,7 +1544,7 @@
 
       const newTicket = {
         id: 'VIN-' + (Math.floor(Math.random() * 900) + 100),
-        unit: 'Unit 3B (1420 Pine)',
+        unit: 'Unit 3B (Address undisclosed)',
         title: title,
         category: category,
         priority: priority,

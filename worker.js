@@ -126,7 +126,7 @@ app.get('/api/plaid-status', async (c) => {
 
 app.get('/api/test-unit', (c) => c.json({
   property: {
-    address: '606 Union St, Apt 3B, Philadelphia, PA 19104',
+    address: 'Undisclosed',
     monthlyRent: 2150.00,
     securityDeposit: 2150.00,
   },
