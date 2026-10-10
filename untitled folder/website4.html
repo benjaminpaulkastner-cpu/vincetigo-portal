@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" href="/assets/vincetigo-logo.jpeg" type="image/jpeg" sizes="768x768" />
   <title>VINCETIGO | Property Management & Asset Portal</title>
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -57,36 +58,14 @@
     .listing-thumb.active { border-color: rgba(99, 102, 241, 1); }
     .detail-image-area { background: linear-gradient(135deg, rgba(15,23,42,0.9), rgba(17,19,26,1)); }
     .brand-badge {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
+      display: block;
       width: 44px;
       height: 44px;
       min-width: 44px;
       border-radius: 16px;
-      background: linear-gradient(135deg, #2b2f7c 0%, #4a57d8 100%);
       box-shadow: 0 12px 25px rgba(79, 70, 229, 0.32);
-      overflow: hidden;
       border: 1px solid rgba(255,255,255,0.08);
-    }
-    .brand-badge svg {
-      width: 34px;
-      height: 34px;
-      display: block;
-      overflow: visible;
-    }
-    .brand-badge .brand-shield {
-      fill: rgba(255,255,255,0.02);
-      stroke: #f5f7ff;
-      stroke-width: 2.4;
-      stroke-linejoin: round;
-    }
-    .brand-badge .brand-v {
-      fill: #f5f7ff;
-      font-weight: 900;
-      font-size: 22px;
-      font-family: Arial, Helvetica, sans-serif;
-      letter-spacing: -0.08em;
+      object-fit: cover;
     }
   </style>
 </head>
@@ -96,12 +75,7 @@
   <header class="bg-surface/80 backdrop-blur-md sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 grid grid-cols-[1fr_auto_1fr] items-center gap-4">
       <div class="flex items-center space-x-3 cursor-pointer justify-self-start" onclick="switchView('public')">
-        <div class="brand-badge" aria-label="Vincetigo logo">
-          <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-            <path class="brand-shield" d="M32 7.5L48 12.5V29.5C48 39.5 41.4 47.7 32 54C22.6 47.7 16 39.5 16 29.5V12.5L32 7.5Z"/>
-            <text class="brand-v" x="32" y="39" text-anchor="middle">V</text>
-          </svg>
-        </div>
+        <img src="/assets/vincetigo-logo.jpeg" alt="Vincetigo logo" class="brand-badge" width="44" height="44" />
         <span class="text-xl font-black tracking-wider uppercase text-white">VINCETIGO</span>
       </div>
 
