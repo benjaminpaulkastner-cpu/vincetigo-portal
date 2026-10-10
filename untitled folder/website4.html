@@ -2001,17 +2001,20 @@
       }
 
       try {
-        const response = await fetch('/api/create-checkout-session', {
+        const checkoutUrl = ['localhost', '127.0.0.1'].includes(window.location.hostname)
+          ? 'http://localhost:8787/api/checkout'
+          : '/api/checkout';
+        const response = await fetch(checkoutUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ amount: 215000 })
         });
 
+        const data = await response.json().catch(() => ({}));
         if (!response.ok) {
-          throw new Error('Checkout endpoint unavailable');
+          throw new Error(data.error || `Checkout request failed (${response.status})`);
         }
 
-        const data = await response.json();
         if (data.url) {
           window.location.href = data.url;
           return;
@@ -2020,7 +2023,7 @@
         throw new Error('No checkout URL returned');
       } catch (error) {
         console.error('Stripe Checkout could not be opened.', error);
-        alert('Stripe Checkout is unavailable. Confirm the backend is running with npm start, then try again.');
+        alert(`Stripe Checkout is unavailable. Please try again later. ${error.message || ''}`);
       }
     }
 

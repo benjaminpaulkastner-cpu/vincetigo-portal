@@ -16,6 +16,8 @@ function configuredOrigins(env) {
   return [
     'http://127.0.0.1:5500',
     'http://localhost:5500',
+    'http://127.0.0.1:5501',
+    'http://localhost:5501',
     env[bindings.FRONTEND_ORIGIN],
     env[bindings.LIVE_FRONTEND_ORIGIN],
   ].filter(Boolean);
@@ -181,7 +183,7 @@ app.post('/api/set_access_token', async (c) => {
   }
 });
 
-app.post('/api/create-checkout-session', async (c) => {
+async function createCheckoutSession(c) {
   try {
     const body = await c.req.json().catch(() => ({}));
     const amount = Number(body.amount || 150000);
@@ -205,7 +207,10 @@ app.post('/api/create-checkout-session', async (c) => {
   } catch (error) {
     return jsonError(c, error);
   }
-});
+}
+
+app.post('/api/checkout', createCheckoutSession);
+app.post('/api/create-checkout-session', createCheckoutSession);
 
 app.post('/api/charge-rent', async (c) => {
   try {
