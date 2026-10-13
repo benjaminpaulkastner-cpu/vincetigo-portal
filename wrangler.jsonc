@@ -8,6 +8,14 @@
   },
   "routes": [
     {
+      "pattern": "vincetigo.com",
+      "custom_domain": true
+    },
+    {
+      "pattern": "www.vincetigo.com",
+      "custom_domain": true
+    },
+    {
       "pattern": "api.vincetigo.com",
       "custom_domain": true
     }

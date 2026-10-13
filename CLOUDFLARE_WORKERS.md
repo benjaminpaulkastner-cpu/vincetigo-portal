@@ -15,7 +15,7 @@ The Worker calls Stripe and Plaid over their HTTPS APIs. This avoids Node-only S
 
 The resident portal sends only a `unitId`. The Worker looks up the rent amount in `worker.js`; it never accepts a client-provided amount. The current mapping is `unit-3b` to 215000 cents ($2,150). Add future units to `RENTAL_UNITS` in the Worker.
 
-The production API uses the custom domain `https://api.vincetigo.com`. The Pages site calls that domain directly, and the Worker CORS allowlist is configured by `FRONTEND_ORIGINS` in `wrangler.jsonc`.
+The Worker serves the repository's static assets on `https://vincetigo.com` and `https://www.vincetigo.com`, and exposes its API on `https://api.vincetigo.com`. These custom domains are configured in `wrangler.jsonc`. The Worker CORS allowlist is configured by `FRONTEND_ORIGINS` in that file.
 
 ## 1. Install and authenticate
 
@@ -40,9 +40,9 @@ Use an `sk_test_...` key while testing and an `sk_live_...` key only for product
 STRIPE_SECRET_KEY="sk_test_..."
 ```
 
-`FRONTEND_ORIGINS` and `PUBLIC_APP_URL` are public configuration, not secrets. They are set in `wrangler.jsonc`; adjust `FRONTEND_ORIGINS` if the Pages site uses another production or preview hostname. The Worker also allows the local Live Server origins on port 5502.
+`FRONTEND_ORIGINS` and `PUBLIC_APP_URL` are public configuration, not secrets. They are set in `wrangler.jsonc`; adjust `FRONTEND_ORIGINS` if the frontend uses another production or preview hostname. The Worker also allows the local Live Server origins on port 5502.
 
-The `routes` configuration provisions `api.vincetigo.com` as a Worker custom domain. The `vincetigo.com` zone must be active in the same Cloudflare account as the Worker.
+The `routes` configuration provisions the apex, `www`, and API hostnames as Worker custom domains. The `vincetigo.com` zone must be active in the same Cloudflare account as the Worker.
 
 ## 3. Run locally
 
@@ -75,7 +75,7 @@ The response contains `sessionId` and `url`. The browser redirects to `url`, whi
 npm run worker:deploy
 ```
 
-After deployment, the API is available at `https://api.vincetigo.com/api/checkout`. The static Pages frontend calls this URL directly. Keep Stripe in test mode until the deployed flow has been verified.
+After deployment, the site is served at `https://vincetigo.com` and `https://www.vincetigo.com`; the API is available at `https://api.vincetigo.com/api/checkout`. Keep Stripe in test mode until the deployed flow has been verified.
 
 ## Cloudflare Dashboard alternative
 
@@ -87,9 +87,9 @@ After deployment, the API is available at `https://api.vincetigo.com/api/checkou
    - Secret `PLAID_CLIENT_ID`
    - Secret `PLAID_SECRET`
    - Variable `PLAID_ENV` with `sandbox` or `production`
-    - Variable `FRONTEND_ORIGINS` with comma-separated allowed origins, such as `https://vincetigo.com,https://www.vincetigo.com`
-    - Variable `PUBLIC_APP_URL` with `https://vincetigo.com`
-5. Configure the Worker custom domain `api.vincetigo.com`, deploy, and keep the Stripe secret in the Worker Secrets settings.
+   - Variable `FRONTEND_ORIGINS` with comma-separated allowed origins, such as `https://vincetigo.com,https://www.vincetigo.com`
+   - Variable `PUBLIC_APP_URL` with `https://vincetigo.com`
+5. Configure the Worker custom domains `vincetigo.com`, `www.vincetigo.com`, and `api.vincetigo.com`, deploy, and keep secrets in the Worker Secrets settings.
 
 ## Route payloads
 
