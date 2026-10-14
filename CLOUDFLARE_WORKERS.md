@@ -11,11 +11,56 @@ The Cloudflare entrypoint is `worker.js`. It preserves these routes:
 
 The Worker calls Stripe and Plaid over their HTTPS APIs. This avoids Node-only SDK runtime dependencies and is compatible with Cloudflare Workers' web-standard `fetch` runtime.
 
+## Admin Dispatch authentication and D1 setup
+
+Admin Dispatch uses the D1 database bound as `DB`. `migrations/0001_auth_and_dispatch.sql` creates the `users` and `dispatch_tickets` tables and marks `ben@vincetigo.com` as an administrator. Only `/api/admin/*` and `/api/dispatch/*` are protected by the admin middleware; the public Stripe `POST /api/checkout` route is not covered by authentication. Admin API routes require a signed eight-hour session and re-check the user's current role in D1 on every request.
+
+Create the production database and copy its returned ID into the `database_id` field for the `DB` binding in `wrangler.jsonc`:
+
+```bash
+npx wrangler d1 create vincetigo-portal
+```
+
+Apply the migrations to local D1 for development and to the remote database for production:
+
+```bash
+npx wrangler d1 migrations apply vincetigo-portal --local --config wrangler.local.jsonc
+npx wrangler d1 migrations apply vincetigo-portal --remote --config wrangler.jsonc
+```
+
+Configure a random JWT signing secret (at least 32 characters) and the one-time initial admin password as Worker secrets. Wrangler prompts for each value; enter the admin password privately at the prompt and do not put it in source control:
+
+```bash
+npx wrangler secret put JWT_SECRET
+npx wrangler secret put ADMIN_INITIAL_PASSWORD
+```
+
+On the first successful login as `ben@vincetigo.com`, the Worker stores a salted password hash in D1. Remove the bootstrap password secret after that login:
+
+```bash
+npx wrangler secret delete ADMIN_INITIAL_PASSWORD
+```
+
+For local development, set `JWT_SECRET` and `ADMIN_INITIAL_PASSWORD` in the git-ignored `.dev.vars` file instead. Run `npm run worker:dev`, serve the portal from an allowed origin, and sign in through the portal login form. The explicit Resident Demo button remains browser-only and does not grant an authenticated role.
+
+Protected API routes include `POST /api/admin/users` (creates a resident account), `GET /api/admin/dispatch/tickets`, `PATCH` and `DELETE /api/admin/dispatch/tickets/:id`, and `POST /api/admin/dispatch/tickets/reset`. The admin navigation is shown only for an authenticated admin; the Worker remains the security boundary.
+
+To provision a resident after signing in as the administrator, call the user endpoint with the admin session token and a password of at least 12 characters:
+
+```bash
+curl -i https://api.vincetigo.com/api/admin/users \
+  -H 'Authorization: Bearer <admin-session-token>' \
+  -H 'Content-Type: application/json' \
+  --data '{"email":"resident@example.com","password":"<resident-password>"}'
+```
+
 ## Secure Stripe Checkout
 
 The resident portal sends only a `unitId`. The Worker looks up the rent amount in `worker.js`; it never accepts a client-provided amount. The current mapping is `unit-3b` to 215000 cents ($2,150). Add future units to `RENTAL_UNITS` in the Worker.
 
-The Worker serves the repository's static assets on `https://vincetigo.com` and `https://www.vincetigo.com`, and exposes its API on `https://api.vincetigo.com`. These custom domains are configured in `wrangler.jsonc`. The Worker CORS allowlist is configured by `FRONTEND_ORIGINS` in that file.
+Resident portal payment links are centralized in `resident-portal/payments.js`. Set each unit's `rent` or `deposit` URL there to an HTTPS Stripe Payment Link. When a unit has no configured link, the portal shows a demo-mode payment dialog instead of navigating to a placeholder URL.
+
+The Worker serves the repository's static assets on `https://vincetigo.com` and `https://www.vincetigo.com`, and exposes its API on `https://api.vincetigo.com`. These custom domains are configured in `wrangler.jsonc`. The Worker CORS allowlist is configured by `FRONTEND_ORIGINS` in that file; local development allows `localhost` and `127.0.0.1` on ports 5502 and 8000 for JSON POST preflights.
 
 ## 1. Install and authenticate
 

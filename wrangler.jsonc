@@ -1,28 +1,36 @@
 {
-  "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "vincetigo-portal",
-  "main": "worker.js",
-  "compatibility_date": "2026-09-29",
-  "assets": {
-    "directory": "./"
-  },
-  "routes": [
-    {
-      "pattern": "vincetigo.com",
-      "custom_domain": true
-    },
-    {
-      "pattern": "www.vincetigo.com",
-      "custom_domain": true
-    },
-    {
-      "pattern": "api.vincetigo.com",
-      "custom_domain": true
-    }
-  ],
-  "vars": {
-    "PLAID_ENV": "sandbox",
-    "FRONTEND_ORIGINS": "https://vincetigo.com,https://www.vincetigo.com",
-    "PUBLIC_APP_URL": "https://vincetigo.com"
-  }
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "vincetigo-portal",
+	"main": "worker.js",
+	"compatibility_date": "2026-09-29",
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "vincetigo-portal",
+			"migrations_dir": "migrations",
+			"database_id": "7a31ba10-c2ce-4e1b-b49d-f2c8292d992f"
+		}
+	],
+	"assets": {
+		"directory": "./"
+	},
+	"routes": [
+		{
+			"pattern": "vincetigo.com",
+			"custom_domain": true
+		},
+		{
+			"pattern": "www.vincetigo.com",
+			"custom_domain": true
+		},
+		{
+			"pattern": "api.vincetigo.com",
+			"custom_domain": true
+		}
+	],
+	"vars": {
+		"PLAID_ENV": "sandbox",
+		"FRONTEND_ORIGINS": "https://vincetigo.com,https://www.vincetigo.com",
+		"PUBLIC_APP_URL": "https://vincetigo.com"
+	}
 }

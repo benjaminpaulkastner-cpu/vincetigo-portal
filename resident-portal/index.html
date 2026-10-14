@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en" class="dark w-full max-w-full overflow-x-hidden">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -28,6 +28,9 @@
     .tab-content { display: none; }
     .tab-content.active { display: block; }
     html { scroll-behavior: smooth; }
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { width: 100%; max-width: 100%; overflow-x: hidden; }
+    img, video, canvas, svg { max-width: 100%; }
     body {
       background-color: #050912;
       background-image:
@@ -66,88 +69,75 @@
       border: 1px solid rgba(255,255,255,0.08);
       object-fit: cover;
     }
+    :focus-visible {
+      outline: 2px solid #a5b4fc;
+      outline-offset: 3px;
+    }
   </style>
 </head>
-<body class="bg-obsidian text-zinc-100 font-sans antialiased min-h-screen flex flex-col selection:bg-indigo-500 selection:text-white">
+<body class="bg-obsidian text-zinc-100 font-sans antialiased min-h-screen w-full max-w-full overflow-x-hidden flex flex-col selection:bg-indigo-500 selection:text-white">
 
   <!-- ================= VINCETIGO DARK NAVBAR ================= -->
   <header class="bg-surface/80 backdrop-blur-md sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 grid grid-cols-[1fr_auto_1fr] items-center gap-4">
-      <div class="flex items-center space-x-3 cursor-pointer justify-self-start" onclick="switchView('public')">
+    <div class="max-w-7xl w-full mx-auto px-2 sm:px-6 min-h-16 flex items-center justify-between gap-2">
+      <a href="#properties" onclick="switchView('public')" class="flex shrink-0 items-center gap-2 sm:gap-3">
         <img src="/assets/vincetigo-logo.jpeg" alt="Vincetigo logo" class="brand-badge" width="44" height="44" />
-        <span class="text-xl font-black tracking-wider uppercase text-white">VINCETIGO</span>
-      </div>
+        <span class="hidden md:inline text-lg font-black tracking-wider uppercase text-white">VINCETIGO</span>
+      </a>
 
-      <nav class="hidden md:flex items-center justify-center gap-8 text-sm font-medium text-zinc-400">
-        <a href="#properties" onclick="switchView('public')" class="hover:text-indigo-400 transition tracking-wide">Portfolio</a>
-        <a href="#contact" onclick="switchView('public')" class="hover:text-indigo-400 transition tracking-wide">Contact</a>
-      </nav>
-
-      <div class="flex items-center space-x-3 justify-self-end">
-        <button type="button" disabled title="Applications will open when listings are available" class="inline-flex items-center gap-2 bg-surface text-zinc-500 border border-surfaceBorder text-xs font-bold uppercase tracking-wider px-3 py-2 rounded-lg cursor-not-allowed">
-          <i data-lucide="file-check-2" class="w-3.5 h-3.5 text-indigo-400"></i>
-          <span>Leasing Coming Soon</span>
-        </button>
-
-        <button id="admin-btn" onclick="toggleAdminView()" class="inline-flex items-center gap-2 bg-surface hover:bg-zinc-800 text-zinc-200 border border-surfaceBorder text-xs font-bold uppercase tracking-wider px-3 py-2 rounded-lg transition">
+      <nav aria-label="Primary navigation" class="flex items-center gap-1 sm:gap-4 whitespace-nowrap text-xs sm:text-sm font-medium text-zinc-400">
+        <a href="#properties" onclick="switchView('public')" class="inline-flex min-h-11 items-center justify-center rounded-lg px-1 sm:px-3 text-center transition hover:bg-zinc-800 hover:text-indigo-400 tracking-wide">Portfolio</a>
+        <a href="#contact" onclick="switchView('public')" class="inline-flex min-h-11 items-center justify-center rounded-lg px-1 sm:px-3 text-center transition hover:bg-zinc-800 hover:text-indigo-400 tracking-wide">Contact</a>
+        <button id="admin-dispatch-nav" type="button" onclick="openAdminDispatch()" class="hidden max-md:hidden items-center gap-2 bg-surface hover:bg-zinc-800 text-zinc-200 border border-surfaceBorder text-xs font-bold uppercase tracking-wider px-3 py-2 rounded-lg transition md:inline-flex">
           <i data-lucide="shield-check" class="w-3.5 h-3.5 text-rose-400"></i>
-          <span id="admin-btn-text">Admin Dispatch</span>
+          <span>Admin Dispatch</span>
         </button>
-
-        <button id="reset-demo-btn" onclick="resetDemoSession()" class="inline-flex items-center gap-2 bg-surface hover:bg-zinc-800 text-zinc-200 border border-surfaceBorder text-xs font-bold uppercase tracking-wider px-3 py-2 rounded-lg transition">
-          <i data-lucide="rotate-ccw" class="w-3.5 h-3.5 text-amber-400"></i>
-          <span>Reset Demo</span>
+        <span id="admin-active-pill" class="hidden max-md:hidden items-center rounded-full border border-emerald-500/40 bg-emerald-500/10 px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-emerald-300 md:inline-flex">Admin Dispatch Active</span>
+        <span id="resident-active-pill" class="hidden max-md:hidden items-center rounded-full border border-emerald-500/40 bg-emerald-500/10 px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-emerald-300 md:inline-flex">Resident Portal Active</span>
+        <button id="admin-logout-button" type="button" aria-label="Log out" title="Log out" onclick="logoutAdmin()" class="hidden min-h-11 min-w-11 items-center justify-center rounded-lg border border-surfaceBorder bg-surface text-zinc-200 transition hover:bg-zinc-800">
+          <i data-lucide="log-out" class="h-4 w-4"></i>
         </button>
-
-        <button id="portal-toggle-btn" onclick="togglePortal()" class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold uppercase tracking-wider px-4 py-2 rounded-lg transition shadow-lg shadow-indigo-600/20">
+        <button id="portal-toggle-btn" type="button" onclick="togglePortal()" class="inline-flex min-h-11 items-center justify-center gap-1 rounded-lg bg-indigo-600 px-1.5 sm:px-4 text-xs sm:text-sm font-bold uppercase tracking-wide text-white shadow-lg shadow-indigo-600/20 transition hover:bg-indigo-500">
           <i data-lucide="key-round" class="w-4 h-4"></i>
-          <span id="portal-btn-text">Resident Portal</span>
+          <span>Resident Portal</span>
         </button>
-      </div>
+      </nav>
     </div>
   </header>
 
-  <div id="demo-status-toast" class="fixed right-5 bottom-24 z-[80] hidden max-w-sm rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-100 shadow-2xl shadow-emerald-900/20 backdrop-blur-sm">
+  <div id="demo-status-toast" class="fixed left-4 right-4 bottom-24 z-[80] hidden w-auto max-w-sm mx-auto rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-100 shadow-2xl shadow-emerald-900/20 backdrop-blur-sm">
     <div id="demo-status-text" class="font-medium">Demo session ready.</div>
   </div>
 
-  <div id="resident-login-modal" class="fixed inset-0 z-[60] hidden bg-obsidian/80 backdrop-blur-sm px-4 py-6 overflow-y-auto">
-    <div class="max-w-md mx-auto mt-8 bg-surface border border-surfaceBorder rounded-2xl shadow-2xl overflow-hidden">
-      <div class="p-6 border-b border-surfaceBorder flex items-center justify-between">
+  <div id="resident-login-modal" role="dialog" aria-modal="true" aria-labelledby="resident-login-title" class="fixed inset-0 z-[60] hidden bg-obsidian/80 backdrop-blur-sm px-4 py-6 overflow-y-auto">
+    <div class="w-full max-w-md mx-auto mt-4 sm:mt-8 bg-surface border border-surfaceBorder rounded-2xl shadow-2xl overflow-hidden">
+      <div class="p-4 sm:p-6 border-b border-surfaceBorder flex items-center justify-between">
         <div>
           <div class="text-[10px] uppercase tracking-[0.2em] font-bold text-indigo-400">Resident access</div>
-          <h2 class="mt-2 text-2xl font-black text-white">Login to portal</h2>
+          <h2 id="resident-login-title" class="mt-2 text-2xl font-black text-white">Login to portal</h2>
         </div>
-        <button type="button" onclick="closeResidentLoginModal()" class="w-8 h-8 rounded-full bg-obsidian border border-surfaceBorder text-zinc-400 hover:text-white transition">✕</button>
+        <button type="button" aria-label="Close resident login dialog" onclick="closeResidentLoginModal()" class="w-8 h-8 rounded-full bg-obsidian border border-surfaceBorder text-zinc-400 hover:text-white transition">✕</button>
       </div>
 
-      <form id="resident-login-form" onsubmit="handleResidentLogin(event)" class="p-6 space-y-4">
+      <form id="login-form" novalidate class="p-4 sm:p-6 space-y-4">
         <div id="resident-login-view" class="space-y-4">
-          <div class="rounded-xl border border-indigo-500/30 bg-indigo-500/5 p-3 text-xs text-indigo-200">
-            <div class="font-bold uppercase tracking-[0.18em] text-indigo-300 mb-1">Demo mode</div>
-            <div>Use the resident portal demo to explore billing, maintenance, and resident operations.</div>
-          </div>
-
           <div>
-            <label class="block text-xs font-semibold uppercase tracking-wide text-zinc-400 mb-2">Email or unit</label>
-            <input id="resident-email" type="text" placeholder="you@example.com or Unit 3B" class="w-full bg-obsidian border border-surfaceBorder rounded-lg px-3 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:border-indigo-500 focus:outline-none" required>
+            <label class="block text-xs font-semibold uppercase tracking-wide text-zinc-400 mb-2">Email</label>
+            <input id="login-email" type="email" autocomplete="username" placeholder="you@example.com" class="w-full bg-obsidian border border-surfaceBorder rounded-lg px-3 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:border-indigo-500 focus:outline-none" required>
           </div>
           <div>
             <label class="block text-xs font-semibold uppercase tracking-wide text-zinc-400 mb-2">Password</label>
-            <input id="resident-password" type="password" placeholder="Enter password" class="w-full bg-obsidian border border-surfaceBorder rounded-lg px-3 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:border-indigo-500 focus:outline-none" required>
+            <input id="login-password" type="password" autocomplete="current-password" placeholder="Enter password" class="w-full bg-obsidian border border-surfaceBorder rounded-lg px-3 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:border-indigo-500 focus:outline-none" required>
           </div>
 
           <div class="flex items-center justify-between text-xs text-zinc-400">
-            <label class="inline-flex items-center gap-2"><input type="checkbox" class="rounded border-surfaceBorder bg-obsidian text-indigo-500"> Keep me signed in</label>
+            <label class="inline-flex items-center gap-2"><input id="login-remember" type="checkbox" class="rounded border-surfaceBorder bg-obsidian text-indigo-500"> Keep me signed in</label>
             <button type="button" onclick="toggleResidentHelpForm()" class="text-indigo-400 hover:text-indigo-300">Need help?</button>
           </div>
 
-          <button type="button" onclick="startResidentDemo()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold uppercase tracking-wider py-3 rounded-lg shadow-lg shadow-indigo-600/20 transition">
-            Start demo
-          </button>
-
-          <button type="submit" class="w-full bg-surface hover:bg-zinc-800 text-zinc-200 border border-surfaceBorder font-bold uppercase tracking-wider py-3 rounded-lg transition">
-            Access resident portal
+          <div id="login-error" class="hidden text-xs text-rose-400 mt-2 text-center font-medium"></div>
+          <button type="submit" id="btn-sign-in" class="w-full bg-surface hover:bg-zinc-800 text-zinc-200 border border-surfaceBorder font-bold uppercase tracking-wider py-3 rounded-lg transition">
+            SIGN IN
           </button>
         </div>
 
@@ -165,11 +155,11 @@
             <textarea id="resident-help-message" rows="4" placeholder="Tell us what you need help with..." class="w-full bg-obsidian border border-surfaceBorder rounded-lg px-3 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:border-indigo-500 focus:outline-none" required></textarea>
           </div>
 
-          <div class="flex gap-3">
-            <button type="button" onclick="submitResidentHelpRequest()" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-bold uppercase tracking-wider py-3 rounded-lg shadow-lg shadow-indigo-600/20 transition">
+          <div class="flex flex-col sm:flex-row gap-3">
+            <button type="button" onclick="submitResidentHelpRequest()" class="w-full sm:flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-bold uppercase tracking-wider py-3 rounded-lg shadow-lg shadow-indigo-600/20 transition">
               Send inquiry
             </button>
-            <button type="button" onclick="toggleResidentHelpForm()" class="flex-1 bg-surface hover:bg-zinc-800 text-zinc-200 border border-surfaceBorder font-bold uppercase tracking-wider py-3 rounded-lg transition">
+            <button type="button" onclick="toggleResidentHelpForm()" class="w-full sm:flex-1 bg-surface hover:bg-zinc-800 text-zinc-200 border border-surfaceBorder font-bold uppercase tracking-wider py-3 rounded-lg transition">
               Back
             </button>
           </div>
@@ -178,17 +168,17 @@
     </div>
   </div>
 
-  <div id="apply-modal" class="fixed inset-0 z-[60] hidden bg-obsidian/80 backdrop-blur-sm px-4 py-6 overflow-y-auto">
-    <div class="max-w-5xl mx-auto mt-8 bg-surface border border-surfaceBorder rounded-2xl shadow-2xl overflow-hidden max-h-[calc(100vh-4rem)] overflow-y-auto">
-      <div class="p-5 border-b border-surfaceBorder flex items-center justify-between gap-4">
+  <div id="apply-modal" role="dialog" aria-modal="true" aria-labelledby="application-modal-title" class="fixed inset-0 z-[60] hidden bg-obsidian/80 backdrop-blur-sm px-4 py-6 overflow-y-auto">
+    <div class="w-full max-w-5xl mx-auto mt-2 sm:mt-8 bg-surface border border-surfaceBorder rounded-2xl shadow-2xl overflow-hidden max-h-[calc(100dvh-1rem)] sm:max-h-[calc(100vh-4rem)] overflow-y-auto">
+      <div class="p-4 sm:p-5 border-b border-surfaceBorder flex items-center justify-between gap-4">
         <div>
           <div class="text-[10px] uppercase tracking-[0.2em] font-bold text-indigo-400">2-step application flow</div>
-          <h2 class="mt-2 text-2xl font-black text-white">On-site application + screening review</h2>
+          <h2 id="application-modal-title" class="mt-2 text-2xl font-black text-white">On-site application + screening review</h2>
         </div>
-        <button type="button" onclick="closeApplyNowModal()" class="w-9 h-9 rounded-full bg-obsidian border border-surfaceBorder text-zinc-400 hover:text-white transition">✕</button>
+        <button type="button" aria-label="Close application dialog" onclick="closeApplyNowModal()" class="w-9 h-9 rounded-full bg-obsidian border border-surfaceBorder text-zinc-400 hover:text-white transition">✕</button>
       </div>
 
-      <div class="p-6 grid grid-cols-1 xl:grid-cols-[1.1fr_0.9fr] gap-6">
+      <div class="p-4 sm:p-6 grid grid-cols-1 xl:grid-cols-[1.1fr_0.9fr] gap-6">
         <div id="apply-step-1" class="space-y-5">
           <div class="flex items-center gap-3 text-xs uppercase tracking-[0.18em] text-zinc-400">
             <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-indigo-600 text-white font-bold">1</span>
@@ -247,8 +237,9 @@
               <div class="flex items-center gap-2 text-xs uppercase tracking-wide text-indigo-400 font-bold mb-2">
                 <i data-lucide="shield-check" class="w-3.5 h-3.5"></i> Compliance note
               </div>
-              Documents are uploaded directly to the property backend or cloud storage. Background screening is not triggered until a qualified applicant is reviewed and approved by staff.
+              This demonstration does not submit or retain application details or uploaded documents, and does not initiate screening or collect an application fee. Do not enter real identity or financial information. Any live application will disclose its process, fee amount, and refund terms before you apply.
             </div>
+            <p class="text-xs leading-relaxed text-zinc-400">By submitting, you authorize Vincetigo Property Management LLC to contact you regarding property management, leasing, and maintenance dispatch. <a href="/privacy.html" class="text-indigo-300 underline">Privacy notice</a>.</p>
 
             <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold uppercase tracking-wider py-3 rounded-lg shadow-lg shadow-indigo-600/20 transition">
               Submit for review
@@ -260,31 +251,31 @@
           <div class="flex items-center justify-between px-4 py-3 border-b border-surfaceBorder bg-surface/80">
             <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-zinc-300">
               <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
-              Step 2: review & trigger
+              Step 2: demo review
             </div>
             <span class="text-[10px] uppercase tracking-[0.2em] text-zinc-500">Admin approval</span>
           </div>
 
           <div class="p-5 space-y-5">
             <div class="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4">
-              <div class="text-[10px] uppercase tracking-[0.18em] text-emerald-300 font-bold">Application submitted</div>
+              <div class="text-[10px] uppercase tracking-[0.18em] text-emerald-300 font-bold">Demo application preview</div>
               <div id="application-summary-name" class="mt-2 text-xl font-black text-white">Applicant</div>
               <div id="application-summary-unit" class="mt-1 text-sm text-zinc-300">Unit</div>
             </div>
 
             <div class="space-y-3 text-sm text-zinc-300">
-              <div class="flex items-start gap-3"><i data-lucide="check-circle" class="w-4 h-4 text-emerald-400 mt-0.5"></i> Uploaded income documents securely saved to backend or cloud storage.</div>
-              <div class="flex items-start gap-3"><i data-lucide="check-circle" class="w-4 h-4 text-emerald-400 mt-0.5"></i> Admin Console can review uploaded W-2s, pay stubs, and ID before approval.</div>
-              <div class="flex items-start gap-3"><i data-lucide="check-circle" class="w-4 h-4 text-emerald-400 mt-0.5"></i> Once income thresholds are verified, screening invite can be automatically sent.</div>
+              <div class="flex items-start gap-3"><i data-lucide="info" class="w-4 h-4 text-amber-400 mt-0.5"></i> This preview does not submit application details or upload selected files.</div>
+              <div class="flex items-start gap-3"><i data-lucide="info" class="w-4 h-4 text-amber-400 mt-0.5"></i> No staff member reviews this demonstration form.</div>
+              <div class="flex items-start gap-3"><i data-lucide="info" class="w-4 h-4 text-amber-400 mt-0.5"></i> No screening or background-check invitation is initiated.</div>
             </div>
 
             <div class="rounded-xl border border-surfaceBorder bg-surface p-4 space-y-3">
-              <div class="text-xs uppercase tracking-[0.18em] text-indigo-400 font-bold">Background screening trigger</div>
-              <p class="text-sm text-zinc-300">This is where the system sends the TransUnion SmartMove or RentSpree invite only after staff confirms income documentation meets policy thresholds.</p>
+              <div class="text-xs uppercase tracking-[0.18em] text-indigo-400 font-bold">Screening step (demonstration only)</div>
+              <p class="text-sm text-zinc-300">A live screening invitation would only be sent through a separately disclosed application process after appropriate review and authorization.</p>
             </div>
 
             <button type="button" onclick="triggerBackgroundCheck()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold uppercase tracking-wider py-3 rounded-lg shadow-lg shadow-indigo-600/20 transition">
-              Trigger screening invite
+              Preview screening step
             </button>
           </div>
         </div>
@@ -295,14 +286,14 @@
   <!-- ================= VIEW 1: PUBLIC REAL ESTATE SITE ================= -->
   <main id="view-public" class="flex-grow">
     <!-- Hero Section -->
-    <section class="relative py-20 px-4 sm:px-6 lg:px-8 overflow-hidden border-b border-surfaceBorder bg-radial from-surface to-obsidian">
+    <section class="relative py-20 px-4 sm:px-6 lg:px-8 overflow-hidden bg-radial from-surface to-obsidian">
       <div class="absolute inset-0 opacity-15 bg-[radial-gradient(#6366f1_1px,transparent_1px)] [background-size:24px_24px]"></div>
       <div class="relative max-w-4xl mx-auto text-center space-y-6">
         <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-indigo-950/60 text-indigo-400 border border-indigo-500/30">
           <span class="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span>
           Philadelphia Urban Property Holdings
         </div>
-        <h1 class="text-4xl sm:text-6xl font-black tracking-tight text-white leading-tight">
+        <h1 class="text-3xl sm:text-5xl md:text-6xl font-bold tracking-tight text-center px-4 text-white leading-tight">
           Disciplined management. <br/><span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-300 to-indigo-200">Uncompromising standards.</span>
         </h1>
         <p class="text-base sm:text-lg text-zinc-400 max-w-2xl mx-auto leading-relaxed">
@@ -330,10 +321,10 @@
       </div>
 
       <div class="bg-surface rounded-2xl border border-surfaceBorder p-4 sm:p-5 mb-6 shadow-xl">
-        <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 w-full">
           <label class="block">
             <span class="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-2">Price</span>
-            <select id="filter-price" class="w-full bg-obsidian border border-surfaceBorder rounded-lg px-3 py-2 text-sm text-zinc-200 outline-none focus:border-indigo-500">
+            <select id="filter-price" class="h-11 w-full min-w-0 bg-obsidian border border-surfaceBorder rounded-lg px-3 py-2 text-base sm:text-sm text-zinc-200 outline-none focus:border-indigo-500">
               <option value="all">Any Price</option>
               <option value="under-2000">Under $2,000</option>
               <option value="2000-2500">$2,000–$2,500</option>
@@ -342,7 +333,7 @@
           </label>
           <label class="block">
             <span class="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-2">Neighborhood</span>
-            <select id="filter-neighborhood" class="w-full bg-obsidian border border-surfaceBorder rounded-lg px-3 py-2 text-sm text-zinc-200 outline-none focus:border-indigo-500">
+            <select id="filter-neighborhood" class="h-11 w-full min-w-0 bg-obsidian border border-surfaceBorder rounded-lg px-3 py-2 text-base sm:text-sm text-zinc-200 outline-none focus:border-indigo-500">
               <option value="all">Any Area</option>
               <option value="center-city">Center City</option>
               <option value="fishtown">Fishtown</option>
@@ -352,7 +343,7 @@
           </label>
           <label class="block">
             <span class="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-2">Bedrooms</span>
-            <select id="filter-bedrooms" class="w-full bg-obsidian border border-surfaceBorder rounded-lg px-3 py-2 text-sm text-zinc-200 outline-none focus:border-indigo-500">
+            <select id="filter-bedrooms" class="h-11 w-full min-w-0 bg-obsidian border border-surfaceBorder rounded-lg px-3 py-2 text-base sm:text-sm text-zinc-200 outline-none focus:border-indigo-500">
               <option value="all">Any</option>
               <option value="1">1 Bed</option>
               <option value="2">2 Bed</option>
@@ -361,7 +352,7 @@
           </label>
           <label class="block">
             <span class="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-2">Pet Policy</span>
-            <select id="filter-pets" class="w-full bg-obsidian border border-surfaceBorder rounded-lg px-3 py-2 text-sm text-zinc-200 outline-none focus:border-indigo-500">
+            <select id="filter-pets" class="h-11 w-full min-w-0 bg-obsidian border border-surfaceBorder rounded-lg px-3 py-2 text-base sm:text-sm text-zinc-200 outline-none focus:border-indigo-500">
               <option value="all">Any</option>
               <option value="pet-friendly">Pet Friendly</option>
               <option value="no-pets">No Pets</option>
@@ -369,7 +360,7 @@
           </label>
           <label class="block">
             <span class="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-2">Availability</span>
-            <select id="filter-availability" class="w-full bg-obsidian border border-surfaceBorder rounded-lg px-3 py-2 text-sm text-zinc-200 outline-none focus:border-indigo-500">
+            <select id="filter-availability" class="h-11 w-full min-w-0 bg-obsidian border border-surfaceBorder rounded-lg px-3 py-2 text-base sm:text-sm text-zinc-200 outline-none focus:border-indigo-500">
               <option value="all">Any Date</option>
               <option value="soon">Available Soon</option>
             </select>
@@ -378,24 +369,24 @@
       </div>
 
       <div id="property-listings" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
-      <div id="listing-detail-modal" class="listing-detail-modal fixed inset-0 z-[70] items-center justify-center bg-obsidian/75 backdrop-blur-sm p-4">
-        <div class="w-full max-w-5xl max-h-[90vh] bg-surface rounded-2xl border border-surfaceBorder shadow-2xl overflow-hidden relative">
-          <button type="button" onclick="closeListingDetail()" class="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-obsidian border border-surfaceBorder text-zinc-300 hover:text-white transition">
+      <div id="listing-detail-modal" role="dialog" aria-modal="true" aria-labelledby="detail-title" class="listing-detail-modal fixed inset-0 z-[70] items-center justify-center bg-obsidian/75 backdrop-blur-sm p-2 sm:p-4">
+        <div class="w-full max-w-5xl max-h-[90dvh] bg-surface rounded-2xl border border-surfaceBorder shadow-2xl overflow-y-auto relative">
+          <button type="button" aria-label="Close property details" onclick="closeListingDetail()" class="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-obsidian border border-surfaceBorder text-zinc-300 hover:text-white transition">
             <span class="text-lg leading-none">×</span>
           </button>
 
-          <div class="grid grid-cols-1 xl:grid-cols-[1.2fr_0.8fr] max-h-[90vh]">
-            <div class="detail-image-area p-4 md:p-6">
+          <div class="grid grid-cols-1 xl:grid-cols-[1.2fr_0.8fr]">
+            <div class="detail-image-area p-3 sm:p-4 md:p-6">
               <div class="relative rounded-2xl overflow-hidden border border-surfaceBorder bg-obsidian">
-                <img id="detail-main-image" src="" alt="Selected property" class="w-full h-[420px] object-cover">
+                <img id="detail-main-image" src="" alt="Selected Philadelphia property photo" class="w-full h-56 sm:h-80 xl:h-[420px] object-cover">
                 <div id="detail-image-counter" class="listing-image-counter">1 / 1</div>
-                <button type="button" onclick="changeDetailImage(-1)" class="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-surface/80 border border-surfaceBorder text-white hover:bg-surface transition">←</button>
-                <button type="button" onclick="changeDetailImage(1)" class="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-surface/80 border border-surfaceBorder text-white hover:bg-surface transition">→</button>
+                <button type="button" aria-label="Previous property photo" onclick="changeDetailImage(-1)" class="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-surface/80 border border-surfaceBorder text-white hover:bg-surface transition">←</button>
+                <button type="button" aria-label="Next property photo" onclick="changeDetailImage(1)" class="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-surface/80 border border-surfaceBorder text-white hover:bg-surface transition">→</button>
               </div>
               <div id="detail-thumbs" class="mt-4 grid grid-cols-4 gap-3"></div>
             </div>
 
-            <div class="listing-detail-scroll p-6 md:p-8 lg:p-10 flex flex-col justify-between max-h-[90vh]">
+            <div class="listing-detail-scroll p-4 sm:p-6 md:p-8 lg:p-10 flex flex-col justify-between">
               <div>
                 <div class="text-[10px] font-bold uppercase tracking-[0.18em] text-indigo-400">Featured listing</div>
                 <h3 id="detail-title" class="mt-3 text-3xl font-black text-white">Property Title</h3>
@@ -422,7 +413,7 @@
                 </div>
               </div>
 
-              <div class="mt-8 flex gap-3">
+              <div class="mt-8 flex flex-col sm:flex-row gap-3">
                 <button type="button" disabled title="Applications will open when listings are available" class="flex-1 bg-indigo-950 text-indigo-300 border border-indigo-500/30 font-bold uppercase tracking-wider px-4 py-3 rounded-lg cursor-not-allowed">
                   Applications Coming Soon
                 </button>
@@ -440,35 +431,11 @@
           <span class="text-xs font-bold uppercase tracking-widest text-indigo-400">Digital Leasing</span>
           <h3 class="mt-3 text-2xl font-black text-white">Faster leasing, tighter screenings, easier tours.</h3>
           <ul class="mt-5 space-y-3 text-sm text-zinc-300">
-            <li class="flex items-start gap-3"><i data-lucide="check-circle" class="w-4 h-4 text-emerald-400 mt-0.5"></i> Secure online applications with automated background and credit review</li>
+            <li class="flex items-start gap-3"><i data-lucide="check-circle" class="w-4 h-4 text-emerald-400 mt-0.5"></i> Live application requirements, screening steps, and fees will be disclosed before applying</li>
             <li class="flex items-start gap-3"><i data-lucide="check-circle" class="w-4 h-4 text-emerald-400 mt-0.5"></i> Instant self-showing and calendar-based tour scheduling</li>
             <li class="flex items-start gap-3"><i data-lucide="check-circle" class="w-4 h-4 text-emerald-400 mt-0.5"></i> DocuSign-ready lease packages and digital fee collection</li>
           </ul>
         </div>
-      </div>
-    </section>
-
-    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
-      <div class="mb-8">
-        <span class="text-xs font-bold uppercase tracking-widest text-indigo-400">Trust & social proof</span>
-        <h2 class="text-2xl font-black text-white mt-1">Residents, owners, and partners choose Vincetigo</h2>
-      </div>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <article class="bg-surface rounded-2xl border border-surfaceBorder p-6">
-          <div class="flex items-center gap-2 text-indigo-400 text-sm font-bold"><i data-lucide="star" class="w-4 h-4"></i> 4.9/5 resident experience</div>
-          <p class="mt-4 text-zinc-300 leading-relaxed">“The portal is easy, maintenance tickets are answered fast, and the communication is incredibly clear.”</p>
-          <div class="mt-4 text-xs uppercase tracking-[0.18em] text-zinc-500">— Sarah M., resident</div>
-        </article>
-        <article class="bg-surface rounded-2xl border border-surfaceBorder p-6">
-          <div class="flex items-center gap-2 text-indigo-400 text-sm font-bold"><i data-lucide="shield-check" class="w-4 h-4"></i> 99.2% compliance adherence</div>
-          <p class="mt-4 text-zinc-300 leading-relaxed">“Their reporting, resident communication, and operational discipline gave me confidence in the investment from day one.”</p>
-          <div class="mt-4 text-xs uppercase tracking-[0.18em] text-zinc-500">— David T., owner</div>
-        </article>
-        <article class="bg-surface rounded-2xl border border-surfaceBorder p-6">
-          <div class="flex items-center gap-2 text-indigo-400 text-sm font-bold"><i data-lucide="trending-up" class="w-4 h-4"></i> 18% faster leasing cycle</div>
-          <p class="mt-4 text-zinc-300 leading-relaxed">“Their digital process, tenant screening, and property marketing stack outperform most local operators I’ve worked with.”</p>
-          <div class="mt-4 text-xs uppercase tracking-[0.18em] text-zinc-500">— Linda R., broker</div>
-        </article>
       </div>
     </section>
 
@@ -502,30 +469,20 @@
     <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
       <div class="rounded-[28px] border border-indigo-500/30 bg-[#0a1220]/90 p-6 md:p-8 shadow-[0_0_0_1px_rgba(99,102,241,0.08)]">
         <div class="grid grid-cols-1 lg:grid-cols-[0.9fr_1.4fr] gap-8 lg:gap-12 items-start">
-          <div class="w-full max-w-[380px]">
-            <div class="mb-5 flex items-center justify-center">
-              <div class="inline-flex items-center gap-2 rounded-full border border-indigo-500/40 bg-indigo-500/10 px-4 py-2 text-sm font-semibold text-indigo-300">
-                <i data-lucide="user-round" class="w-4 h-4"></i>
-                <span>Founder & CEO</span>
-              </div>
-            </div>
-
+          <div class="w-full max-w-sm mx-auto">
             <div class="rounded-[22px] bg-[#0d1420] p-4">
-              <div class="mb-4 flex items-center gap-3 text-2xl font-medium text-white leading-none tracking-tight">
-                <span>Ben Kastner - Founder & CEO</span>
-              </div>
-
               <div class="h-[300px] md:h-[360px] overflow-hidden rounded-[18px] bg-[#0e1320]">
                 <img src="/resident-portal/headshot.jpeg" alt="Ben Kastner portrait" class="h-full w-full object-cover object-[center_15%]" />
               </div>
             </div>
-
-            <div class="mt-5 text-[11px] font-bold uppercase tracking-[0.28em] text-zinc-400">Executive Leadership</div>
           </div>
 
           <div class="lg:pt-8">
             <h2 class="text-4xl md:text-5xl font-black text-white leading-none tracking-tight">Ben Kastner</h2>
-            <p class="mt-3 text-xl text-zinc-300">Principal Operator, Vincetigo Holdings</p>
+            <div class="mt-4 inline-flex items-center gap-2 rounded-full border border-indigo-500/40 bg-indigo-500/10 px-4 py-2 text-sm font-semibold text-indigo-300">
+              <i data-lucide="user-round" class="w-4 h-4"></i>
+              <span>Founder & CEO</span>
+            </div>
 
             <div class="mt-6 space-y-5 text-base leading-8 text-zinc-300">
               <p>
@@ -536,10 +493,10 @@
               </p>
             </div>
 
-            <div class="mt-8 flex flex-col sm:flex-row gap-4">
-              <a href="tel:+12676552267" class="inline-flex flex-1 items-center justify-center gap-3 rounded-xl border border-indigo-500/30 bg-[#0c1220] px-4 py-3 text-base font-medium text-white shadow-sm shadow-indigo-900/10 transition hover:border-indigo-400">
+            <div id="contact" class="mt-8 flex flex-col sm:flex-row gap-4 scroll-mt-24">
+              <a href="tel:+12679009777" class="inline-flex flex-1 items-center justify-center gap-3 rounded-xl border border-indigo-500/30 bg-[#0c1220] px-4 py-3 text-base font-medium text-white shadow-sm shadow-indigo-900/10 transition hover:border-indigo-400">
                 <i data-lucide="phone" class="w-5 h-5 text-indigo-300"></i>
-                <span>Cell: 267-655-2267</span>
+                <span>Cell: 267-900-9777</span>
               </a>
               <a href="mailto:ben@vincetigo.com" class="inline-flex flex-1 items-center justify-center gap-3 rounded-xl border border-indigo-500/30 bg-[#0c1220] px-4 py-3 text-base font-medium text-white shadow-sm shadow-indigo-900/10 transition hover:border-indigo-400">
                 <i data-lucide="mail" class="w-5 h-5 text-indigo-300"></i>
@@ -566,11 +523,11 @@
         <h1 class="text-2xl font-black text-white mt-0.5">Resident Portal</h1>
         <p id="resident-unit-label" class="text-xs text-zinc-400">Unit 3B • Address undisclosed, Philadelphia</p>
       </div>
-      <div class="flex gap-2">
-        <button onclick="switchTab('payment-tab')" id="tab-btn-payment" class="px-4 py-2 text-xs font-bold uppercase tracking-wider rounded-lg bg-indigo-600 text-white shadow-lg shadow-indigo-600/20 transition">
+      <div class="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+        <button onclick="switchTab('payment-tab')" id="tab-btn-payment" class="w-full sm:w-auto min-h-11 px-4 py-2 text-xs font-bold uppercase tracking-wider rounded-lg bg-indigo-600 text-white shadow-lg shadow-indigo-600/20 transition">
           Billing & Transfers
         </button>
-        <button onclick="switchTab('maintenance-tab')" id="tab-btn-maintenance" class="px-4 py-2 text-xs font-bold uppercase tracking-wider rounded-lg bg-surface text-zinc-300 border border-surfaceBorder hover:bg-zinc-800 transition">
+        <button onclick="switchTab('maintenance-tab')" id="tab-btn-maintenance" class="w-full sm:w-auto min-h-11 px-4 py-2 text-xs font-bold uppercase tracking-wider rounded-lg bg-surface text-zinc-300 border border-surfaceBorder hover:bg-zinc-800 transition">
           Maintenance Operations
         </button>
       </div>
@@ -582,20 +539,16 @@
         <div class="md:col-span-2 bg-surface rounded-xl border border-surfaceBorder p-6 shadow-xl flex flex-col justify-between">
           <div class="space-y-1">
             <span id="balance-label" class="text-xs font-bold uppercase tracking-wider text-zinc-400">Monthly Balance Due</span>
-            <div class="text-4xl font-black text-white tracking-tight" id="portal-balance">$2,150.00</div>
+            <div class="text-4xl font-black text-white tracking-tight" id="portal-balance">$1,200.00</div>
             <p class="text-xs text-amber-400 flex items-center gap-1.5 pt-1">
               <i data-lucide="clock" class="w-3.5 h-3.5"></i> Standard due date on the 1st of the month
             </p>
           </div>
 
           <div class="pt-6 border-t border-surfaceBorder flex flex-wrap gap-3 items-center">
-            <a id="rent-payment-link" href="STRIPE_LINK_PLACEHOLDER" data-default-href="STRIPE_LINK_PLACEHOLDER" class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider shadow-lg shadow-indigo-600/20 transition">
+            <button id="rent-payment-link" type="button" data-payment-unit="unit-3b" data-payment-purpose="deposit" onclick="openResidentPayment(this)" class="w-full sm:w-auto min-h-11 inline-flex justify-center items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider shadow-lg shadow-indigo-600/20 transition">
               <i data-lucide="credit-card" class="w-4 h-4"></i>
-              <span id="rent-payment-label">Pay Balance (Stripe Gateway)</span>
-            </a>
-            <button type="button" disabled title="Bank payments are unavailable on static unit pages" class="inline-flex items-center gap-2 bg-obsidian text-zinc-500 border border-surfaceBorder px-4 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider cursor-not-allowed">
-              <i data-lucide="landmark" class="w-4 h-4 text-indigo-400"></i>
-              <span>Bank Payments Unavailable</span>
+              <span id="rent-payment-label">Pay Security Deposit ($1,200)</span>
             </button>
           </div>
         </div>
@@ -617,7 +570,7 @@
       <!-- Payment Ledger -->
       <div class="bg-surface rounded-xl border border-surfaceBorder shadow-xl overflow-hidden">
         <div class="p-5 border-b border-surfaceBorder flex justify-between items-center">
-          <h2 class="font-bold text-white text-sm">Verified Transaction Ledger</h2>
+          <h2 class="font-bold text-white text-sm">Sample Payment Activity</h2>
           <span class="text-xs text-zinc-400">Sample payment history</span>
         </div>
         <div class="divide-y divide-surfaceBorder text-sm">
@@ -658,14 +611,14 @@
     <!-- TAB 2: RESIDENT MAINTENANCE TRACKER -->
     <section id="maintenance-tab" class="tab-content space-y-6">
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div class="bg-surface rounded-xl border border-surfaceBorder p-6 shadow-xl">
+        <div class="w-full max-w-md mx-auto lg:max-w-none bg-surface rounded-xl border border-surfaceBorder p-4 sm:p-6 shadow-xl">
           <h2 class="font-bold text-white text-sm mb-1">Submit Repair Request</h2>
-          <p class="text-xs text-zinc-400 mb-4">Tickets are sent directly to Vincetigo operational dispatch.</p>
+          <p class="text-xs text-zinc-400 mb-4">This demonstration logs requests in this browser only; it does not notify dispatch.</p>
 
           <form id="maintenance-form" onsubmit="handleTenantSubmit(event)" class="space-y-4">
             <div>
               <label class="block text-xs font-semibold text-zinc-300 mb-1">Category</label>
-              <select id="ticket-category" class="w-full text-xs border border-surfaceBorder rounded-lg p-2.5 bg-obsidian text-zinc-200 focus:border-indigo-500 focus:outline-none">
+              <select id="ticket-category" class="h-11 w-full min-w-0 text-base sm:text-sm border border-surfaceBorder rounded-lg px-3 py-2 bg-obsidian text-zinc-200 focus:border-indigo-500 focus:outline-none">
                 <option value="Plumbing">Plumbing (Leak, Drain, Toilet)</option>
                 <option value="HVAC / Climate">HVAC / Heating / Cooling</option>
                 <option value="Electrical">Electrical / Fixtures</option>
@@ -676,7 +629,7 @@
 
             <div>
               <label class="block text-xs font-semibold text-zinc-300 mb-1">Priority</label>
-              <select id="ticket-priority" class="w-full text-xs border border-surfaceBorder rounded-lg p-2.5 bg-obsidian text-zinc-200 focus:border-indigo-500 focus:outline-none">
+              <select id="ticket-priority" class="h-11 w-full min-w-0 text-base sm:text-sm border border-surfaceBorder rounded-lg px-3 py-2 bg-obsidian text-zinc-200 focus:border-indigo-500 focus:outline-none">
                 <option value="Standard" selected>Standard Service</option>
                 <option value="Urgent">Urgent Priority (Water/Heat Outage)</option>
               </select>
@@ -692,6 +645,7 @@
               <textarea id="ticket-desc" rows="3" placeholder="Provide detail and let us know if management has entry permission..." required class="w-full text-xs border border-surfaceBorder rounded-lg p-2.5 bg-obsidian text-zinc-200 placeholder-zinc-600 focus:border-indigo-500 focus:outline-none"></textarea>
             </div>
 
+            <p class="text-xs leading-relaxed text-zinc-400">By submitting, you authorize Vincetigo Property Management LLC to contact you regarding property management, leasing, and maintenance dispatch. <a href="/privacy.html" class="text-indigo-300 underline">Privacy notice</a>.</p>
             <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold uppercase tracking-wider py-2.5 rounded-lg text-xs shadow-lg shadow-indigo-600/20 transition">
               Transmit Ticket
             </button>
@@ -702,7 +656,7 @@
           <div class="p-5 border-b border-surfaceBorder flex justify-between items-center">
             <div>
               <h2 class="font-bold text-white text-sm">Active Resident Tickets</h2>
-              <p class="text-xs text-zinc-400">Live operational dispatch status</p>
+              <p class="text-xs text-zinc-400">Demo ticket status saved in this browser</p>
             </div>
             <span id="tenant-ticket-count" class="bg-indigo-950/80 border border-indigo-500/30 text-indigo-400 text-xs font-bold px-2.5 py-1 rounded-full">2 Active</span>
           </div>
@@ -829,17 +783,15 @@
 
   <!-- ================= FOOTER ================= -->
   <footer class="bg-surface mt-auto py-6">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between text-xs text-zinc-500 gap-4">
-      <div class="flex items-center space-x-2">
-        <span class="font-bold tracking-wider uppercase text-zinc-300">VINCETIGO HOLDINGS</span>
-        <span>•</span>
-        <span>&copy; 2026 Ben Kastner. All rights reserved.</span>
-      </div>
-      <div class="flex space-x-6">
-        <a href="#contact" class="hover:text-zinc-300 transition">Management Office</a>
-        <a href="mailto:ben@vincetigo.com" class="hover:text-zinc-300 transition">ben@vincetigo.com</a>
-        <a href="tel:2676552267" class="hover:text-zinc-300 transition">267-655-2267</a>
-      </div>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-3 text-sm text-zinc-400">
+      <p>&copy; 2026 Vincetigo Property Management LLC. All rights reserved.</p>
+      <p>Philadelphia, PA | Official Resident Portal &amp; Leasing</p>
+      <p>Equal Housing Opportunity: We are pledged to the letter and spirit of U.S. policy for the achievement of equal housing opportunity throughout the Nation.</p>
+      <nav aria-label="Legal and support links" class="flex flex-wrap gap-x-5 gap-y-2">
+        <a href="/privacy.html" class="hover:text-white underline">Privacy</a>
+        <a href="/terms.html" class="hover:text-white underline">Terms</a>
+        <a href="mailto:ben@vincetigo.com" class="hover:text-white underline">Email support</a>
+      </nav>
     </div>
   </footer>
 
@@ -848,17 +800,17 @@
     <span>Feedback</span>
   </button>
 
-  <div id="feedback-modal" class="fixed inset-0 z-[70] hidden bg-obsidian/75 backdrop-blur-sm px-4 py-6 overflow-y-auto">
-    <div class="max-w-lg mx-auto mt-8 bg-surface border border-surfaceBorder rounded-2xl shadow-2xl overflow-hidden max-h-[calc(100vh-4rem)] overflow-y-auto">
+  <div id="feedback-modal" role="dialog" aria-modal="true" aria-labelledby="feedback-modal-title" class="fixed inset-0 z-[70] hidden bg-obsidian/75 backdrop-blur-sm px-4 py-6 overflow-y-auto">
+    <div class="w-full max-w-md mx-auto mt-4 sm:mt-8 bg-surface border border-surfaceBorder rounded-2xl shadow-2xl overflow-hidden max-h-[calc(100dvh-2rem)] overflow-y-auto">
       <div class="p-5 border-b border-surfaceBorder flex items-center justify-between gap-4">
         <div>
           <div class="text-[10px] uppercase tracking-[0.2em] font-bold text-indigo-400">Resident feedback</div>
-          <h2 class="mt-2 text-2xl font-black text-white">Share your thoughts</h2>
+          <h2 id="feedback-modal-title" class="mt-2 text-2xl font-black text-white">Share your thoughts</h2>
         </div>
-        <button type="button" onclick="closeFeedbackModal()" class="w-9 h-9 rounded-full bg-obsidian border border-surfaceBorder text-zinc-400 hover:text-white transition">✕</button>
+        <button type="button" aria-label="Close feedback dialog" onclick="closeFeedbackModal()" class="w-9 h-9 rounded-full bg-obsidian border border-surfaceBorder text-zinc-400 hover:text-white transition">✕</button>
       </div>
 
-      <form id="feedback-form" class="p-6 space-y-4" onsubmit="submitFeedbackForm(event)">
+      <form id="feedback-form" class="p-4 sm:p-6 space-y-4" onsubmit="submitFeedbackForm(event)">
         <div>
           <label class="block text-xs font-semibold uppercase tracking-wide text-zinc-400 mb-2">Your name</label>
           <input id="feedback-name" type="text" placeholder="Jane Resident" class="w-full bg-obsidian border border-surfaceBorder rounded-lg px-3 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:border-indigo-500 focus:outline-none" required>
@@ -879,9 +831,245 @@
     </div>
   </div>
 
+  <script src="/resident-portal/payments.js"></script>
   <!-- ================= LOGIC & REAL-TIME STATE ENGINE ================= -->
   <script>
     lucide.createIcons();
+
+    const API_BASE_URL = ['localhost', '127.0.0.1'].includes(location.hostname)
+      ? 'http://127.0.0.1:8787'
+      : 'https://api.vincetigo.com';
+    /** @typedef {{ id: string, email: string, role: 'resident' | 'admin' }} AuthenticatedUser */
+    /** @type {AuthenticatedUser | null} */
+    let authenticatedUser = null;
+    let pendingAdminDispatchRoute = location.pathname.replace(/\/+$/, '') === '/admin/dispatch'
+      || new URLSearchParams(location.search).get('view') === 'admin-dispatch';
+
+    async function portalApi(path, options = {}) {
+      const headers = new Headers(options.headers || {});
+      if (options.body) headers.set('Content-Type', 'application/json');
+      const token = sessionStorage.getItem('vincetigo_session');
+      if (token) headers.set('Authorization', `Bearer ${token}`);
+
+      const response = await fetch(`${API_BASE_URL}${path}`, { ...options, headers });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || `Request failed (${response.status}).`);
+      return result;
+    }
+
+    function updateAdminNavigation() {
+      const canAccessAdmin = authenticatedUser?.role === 'admin';
+      const desktopAdminLink = document.getElementById('admin-dispatch-nav');
+      desktopAdminLink?.classList.toggle('hidden', !canAccessAdmin);
+      desktopAdminLink?.classList.toggle('border-indigo-500/50', canAccessAdmin);
+      desktopAdminLink?.classList.toggle('bg-indigo-500/10', canAccessAdmin);
+      desktopAdminLink?.classList.toggle('text-indigo-200', canAccessAdmin);
+      document.getElementById('admin-active-pill')?.classList.toggle('hidden', !canAccessAdmin);
+      document.getElementById('admin-active-pill')?.classList.toggle('inline-flex', canAccessAdmin);
+      const isResident = authenticatedUser?.role === 'resident';
+      document.getElementById('resident-active-pill')?.classList.toggle('hidden', !isResident);
+      document.getElementById('resident-active-pill')?.classList.toggle('inline-flex', isResident);
+      const canLogout = Boolean(authenticatedUser);
+      document.getElementById('admin-logout-button')?.classList.toggle('hidden', !canLogout);
+      document.getElementById('admin-logout-button')?.classList.toggle('inline-flex', canLogout);
+    }
+
+    async function handlePendingAdminDispatchRoute() {
+      if (!pendingAdminDispatchRoute) return;
+      window.history.replaceState(null, '', '/resident-portal/');
+      if (!authenticatedUser) {
+        openResidentLoginModal();
+        return;
+      }
+      pendingAdminDispatchRoute = false;
+      if (authenticatedUser.role === 'admin') {
+        await openAdminDispatch();
+        return;
+      }
+      inPortal = true;
+      inAdmin = false;
+      window.inPortal = true;
+      window.inAdmin = false;
+      updateViewVisibility();
+    }
+
+    function clearRejectedAdminSession(error) {
+      const message = error instanceof Error ? error.message : '';
+      if (!['Authentication required', 'Session is no longer valid', 'Unauthorized access'].some(reason => message.includes(reason))) return false;
+      sessionStorage.removeItem('vincetigo_session');
+      localStorage.removeItem('vincetigo_session');
+      clearPersistedAdminRole();
+      authenticatedUser = null;
+      adminTickets = [];
+      inAdmin = false;
+      window.inAdmin = false;
+      updateAdminNavigation();
+      updateViewVisibility();
+      return true;
+    }
+
+    async function restoreAuthenticatedSession() {
+      const savedSession = localStorage.getItem('vincetigo_session');
+      if (savedSession) {
+        try {
+          const session = JSON.parse(savedSession);
+          const role = session?.role;
+          const email = typeof session?.email === 'string' ? session.email.trim().toLowerCase() : '';
+          if (!['resident', 'admin'].includes(role) || !email) throw new Error('Saved sign-in session is invalid.');
+
+          authenticatedUser = { id: email, email, role };
+          updateAdminNavigation();
+          if (role === 'admin') {
+            await openAdminDispatch();
+          } else {
+            inPortal = true;
+            inAdmin = false;
+            window.inPortal = true;
+            window.inAdmin = false;
+            updateViewVisibility();
+          }
+          return;
+        } catch (error) {
+          localStorage.removeItem('vincetigo_session');
+          authenticatedUser = null;
+          updateAdminNavigation();
+          showDemoStatus(`Your saved session could not be restored: ${error.message}`, 'warning');
+        }
+      }
+
+      const token = sessionStorage.getItem('vincetigo_session');
+      if (!token) {
+        updateAdminNavigation();
+        await handlePendingAdminDispatchRoute();
+        return;
+      }
+
+      try {
+        const { user } = await portalApi('/api/auth/me');
+        if (!user || !['resident', 'admin'].includes(user.role)) throw new Error('Invalid account role.');
+        authenticatedUser = user;
+        localStorage.setItem('vincetigo_session', JSON.stringify({ role: user.role, email: user.email.toLowerCase() }));
+        updateAdminNavigation();
+        if (user.role === 'admin') await openAdminDispatch();
+        else {
+          inPortal = true;
+          inAdmin = false;
+          window.inPortal = true;
+          window.inAdmin = false;
+          updateViewVisibility();
+        }
+        await handlePendingAdminDispatchRoute();
+      } catch (error) {
+        sessionStorage.removeItem('vincetigo_session');
+        localStorage.removeItem('vincetigo_session');
+        authenticatedUser = null;
+        updateAdminNavigation();
+        showDemoStatus(`Your saved session could not be restored: ${error.message}`, 'warning');
+        await handlePendingAdminDispatchRoute();
+      }
+    }
+
+    function ensureAccessibleControlNames(root = document) {
+      const selector = 'button, input:not([type="hidden"]), select, textarea';
+      const controls = root.matches?.(selector) ? [root] : root.querySelectorAll(selector);
+      const closeActions = {
+        closeResidentLoginModal: 'Close resident login dialog',
+        closeApplyNowModal: 'Close application dialog',
+        closeFeedbackModal: 'Close feedback dialog',
+        closeListingDetail: 'Close property details',
+      };
+
+      controls.forEach((control) => {
+        if (control.hasAttribute('aria-label')) return;
+
+        const associatedLabel = control.closest('label')
+          || control.parentElement?.querySelector(':scope > label');
+        const action = control.getAttribute('onclick') || '';
+        const closeAction = Object.keys(closeActions).find((name) => action.includes(name));
+        const selectChange = control.getAttribute('onchange') || '';
+        const imageAlt = control.querySelector('img')?.alt;
+        const buttonText = control.tagName === 'BUTTON'
+          ? control.textContent.replace(/\s+/g, ' ').trim()
+          : '';
+        let accessibleName = associatedLabel?.textContent.replace(/\s+/g, ' ').trim()
+          || (closeAction ? closeActions[closeAction] : '')
+          || imageAlt
+          || (buttonText && !['×', '✕', '←', '→'].includes(buttonText) ? buttonText : '')
+          || control.getAttribute('placeholder')
+          || control.getAttribute('title');
+
+        if (!accessibleName && selectChange.includes('updateTicketStatus')) {
+          accessibleName = 'Maintenance ticket status';
+        } else if (!accessibleName && selectChange.includes('updateTicketAssignee')) {
+          accessibleName = 'Maintenance ticket assignee';
+        } else if (!accessibleName && action.includes('changeDetailImage(-1)')) {
+          accessibleName = 'Previous property photo';
+        } else if (!accessibleName && action.includes('changeDetailImage(1)')) {
+          accessibleName = 'Next property photo';
+        }
+
+        if (!accessibleName && control.id) {
+          accessibleName = control.id.replace(/-/g, ' ');
+        }
+        if (accessibleName) control.setAttribute('aria-label', accessibleName);
+      });
+    }
+
+    ensureAccessibleControlNames();
+    new MutationObserver((mutations) => {
+      mutations.forEach(({ addedNodes }) => {
+        addedNodes.forEach((node) => {
+          if (node.nodeType === Node.ELEMENT_NODE) ensureAccessibleControlNames(node);
+        });
+      });
+    }).observe(document.body, { childList: true, subtree: true });
+
+    let lastDialogTrigger = null;
+
+    function focusDialog(dialog, selector) {
+      lastDialogTrigger = document.activeElement;
+      dialog.querySelector(selector)?.focus();
+    }
+
+    function restoreDialogFocus() {
+      if (lastDialogTrigger?.isConnected) lastDialogTrigger.focus();
+      lastDialogTrigger = null;
+    }
+
+    document.addEventListener('keydown', (event) => {
+      const dialog = [...document.querySelectorAll('[role="dialog"]')]
+        .find((element) => element.getClientRects().length > 0);
+      if (!dialog) {
+        return;
+      }
+
+      if (event.key === 'Escape') {
+        dialog.querySelector('[aria-label^="Close"]')?.click();
+        return;
+      }
+      if (event.key !== 'Tab') return;
+
+      const focusable = [...dialog.querySelectorAll('a[href], button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex="0"]')]
+        .filter((element) => element.getClientRects().length > 0);
+      if (!focusable.length) {
+        event.preventDefault();
+        dialog.focus();
+        return;
+      }
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (!dialog.contains(document.activeElement)) {
+        event.preventDefault();
+        first.focus();
+      } else if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    });
 
     const listingSeedData = [
       {
@@ -949,6 +1137,30 @@
       };
     }
 
+    function getPropertyImageAlt(listing, image, index) {
+      const imageUrl = String(image || '');
+      let view = `property photo ${index + 1}`;
+
+      if (imageUrl.includes('photo-1545324418')) view = 'multi-family property exterior';
+      else if (imageUrl.includes('photo-1502672260266')) view = 'interior living room';
+      else if (
+        imageUrl.includes('photo-1494526585095')
+        || imageUrl.includes('photo-1448630360428')
+        || imageUrl.includes('photo-1600585154340')
+        || imageUrl.includes('photo-1512917774080')
+      ) view = 'property exterior';
+      else if (imageUrl.includes('photo-1484154218962')) view = 'interior kitchen';
+      else if (imageUrl.includes('photo-1505693416388')) view = 'interior bedroom';
+
+      const neighborhoods = {
+        'listing-101': 'Center City',
+        'listing-102': 'Fishtown',
+        'listing-103': 'Fairmount',
+      };
+      const neighborhood = neighborhoods[listing.id] || 'Philadelphia';
+      return `${view} of ${listing.title} in ${neighborhood}, Philadelphia`;
+    }
+
     function getStoredListings() {
       const stored = localStorage.getItem('vincetigo_listings');
       if (stored) {
@@ -987,8 +1199,8 @@
 
         return `
         <article class="property-card bg-surface rounded-xl border border-surfaceBorder overflow-hidden group hover:border-indigo-500/40 transition duration-300" data-id="${normalizedListing.id}" data-index="${index}" data-price="${Number(String(normalizedListing.price).replace(/[^0-9.-]/g, '') || 0)}" data-neighborhood="center-city" data-bedrooms="${normalizedListing.beds}" data-pets="pet-friendly" data-availability="soon">
-          <div class="listing-image-area h-52 relative overflow-hidden cursor-pointer" data-listing-id="${normalizedListing.id}" data-index="${index}" aria-label="Advance listing image">
-            <img src="${images[0]}" alt="${normalizedListing.title}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+          <div class="listing-image-area h-52 relative overflow-hidden cursor-pointer" data-listing-id="${normalizedListing.id}" data-index="${index}">
+            <img src="${images[0]}" alt="${getPropertyImageAlt(normalizedListing, images[0], 0)}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
             <div class="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-transparent"></div>
             <span class="absolute top-3 right-3 bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-semibold px-2.5 py-0.5 rounded">Coming Soon</span>
             <button type="button" data-listing-image-prev="${normalizedListing.id}" class="absolute left-3 top-1/2 -translate-y-1/2 z-10 flex h-8 w-8 items-center justify-center rounded-full border border-surfaceBorder bg-surface/80 text-white shadow-md backdrop-blur-sm transition hover:bg-surface" aria-label="Previous image">
@@ -999,9 +1211,9 @@
             </button>
             <div class="listing-image-counter">1 / ${images.length}</div>
           </div>
-          <div class="p-6 space-y-3 cursor-pointer" data-open-listing="${normalizedListing.id}">
-            <div class="flex justify-between items-baseline">
-              <h3 class="font-bold text-lg text-white">${normalizedListing.title}</h3>
+          <div class="p-4 sm:p-6 space-y-3 cursor-pointer" data-open-listing="${normalizedListing.id}">
+            <div class="flex flex-wrap justify-between items-baseline gap-x-3 gap-y-1">
+              <h3 class="min-w-0 font-bold text-lg text-white">${normalizedListing.title}</h3>
               <span class="text-indigo-400 font-bold">${normalizedListing.price}<span class="text-zinc-500 text-xs font-normal">/mo</span></span>
             </div>
             <p class="text-zinc-400 text-xs flex items-center gap-1.5">
@@ -1010,9 +1222,9 @@
             <div class="pt-4 border-t border-surfaceBorder flex justify-between text-xs text-zinc-400">
               <span>${normalizedListing.beds} Bed</span> • <span>${normalizedListing.baths} Bath</span> • <span>${normalizedListing.sqft} sq ft</span>
             </div>
-            <div class="flex gap-2 pt-2">
-              <button type="button" data-view-details="${normalizedListing.id}" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold uppercase tracking-wider px-3 py-2.5 rounded-lg transition">View Details</button>
-              <button type="button" disabled title="Applications will open when listings are available" class="flex-1 bg-surface text-zinc-500 border border-surfaceBorder text-xs font-bold uppercase tracking-wider px-3 py-2.5 rounded-lg cursor-not-allowed">Applications coming soon</button>
+            <div class="flex flex-col sm:flex-row gap-2 pt-2">
+              <button type="button" data-view-details="${normalizedListing.id}" class="w-full sm:flex-1 min-h-11 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold uppercase tracking-wider px-3 py-2.5 rounded-lg transition">View Details</button>
+              <button type="button" disabled title="Applications will open when listings are available" class="w-full sm:flex-1 min-h-11 bg-surface text-zinc-500 border border-surfaceBorder text-xs font-bold uppercase tracking-wider px-3 py-2.5 rounded-lg cursor-not-allowed">Applications coming soon</button>
             </div>
           </div>
         </article>
@@ -1061,6 +1273,7 @@
       });
 
       lucide.createIcons();
+      ensureAccessibleControlNames(listingsEl);
     }
 
     function cycleListingImage(listingId, direction) {
@@ -1077,6 +1290,7 @@
 
       imageArea.dataset.imageIndex = String(nextIndex);
       imageEl.src = listing.images[nextIndex];
+      imageEl.alt = getPropertyImageAlt(listing, listing.images[nextIndex], nextIndex);
       if (counterEl) counterEl.textContent = `${nextIndex + 1} / ${listing.images.length}`;
     }
 
@@ -1103,7 +1317,7 @@
       const thumbContainer = document.getElementById('detail-thumbs');
       thumbContainer.innerHTML = listing.images.map((image, index) => `
         <button type="button" data-detail-thumb="${index}" class="listing-thumb rounded-lg overflow-hidden border ${index === 0 ? 'active' : ''} border-surfaceBorder hover:border-indigo-500/50 transition">
-          <img src="${image}" alt="${listing.title} thumbnail ${index + 1}" class="w-full h-20 object-cover">
+          <img src="${image}" alt="${getPropertyImageAlt(listing, image, index)}" class="w-full h-20 object-cover">
         </button>
       `).join('');
 
@@ -1117,6 +1331,7 @@
 
       document.getElementById('listing-detail-modal').classList.add('active');
       document.getElementById('listing-detail-modal').style.display = 'flex';
+      focusDialog(document.getElementById('listing-detail-modal'), '[aria-label="Close property details"]');
     }
 
     function updateSelectedDetailImage() {
@@ -1124,7 +1339,9 @@
       if (!listing) return;
 
       const index = listingState.selectedImageIndex;
-      document.getElementById('detail-main-image').src = listing.images[index];
+      const mainImage = document.getElementById('detail-main-image');
+      mainImage.src = listing.images[index];
+      mainImage.alt = getPropertyImageAlt(listing, listing.images[index], index);
       document.getElementById('detail-image-counter').textContent = `${index + 1} / ${listing.images.length}`;
 
       document.querySelectorAll('.listing-thumb').forEach((thumb) => {
@@ -1144,6 +1361,7 @@
       const modal = document.getElementById('listing-detail-modal');
       modal.classList.remove('active');
       modal.style.display = 'none';
+      restoreDialogFocus();
     }
 
     const listingDetailModal = document.getElementById('listing-detail-modal');
@@ -1205,6 +1423,17 @@
     }
 
     let tickets = getStoredTickets();
+    let adminTickets = [];
+
+    function escapeHtml(value) {
+      return String(value ?? '').replace(/[&<>"']/g, character => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;',
+      })[character]);
+    }
 
     // Helper: Style Badges based on status
     function getStatusBadge(status) {
@@ -1294,7 +1523,7 @@
           <div class="mt-4 flex flex-wrap gap-2">
             ${images.map((image, index) => `
               <div class="relative w-16 h-16 overflow-hidden rounded-lg border border-surfaceBorder bg-obsidian">
-                <img src="${image}" alt="${normalizedListing.title} photo ${index + 1}" class="w-full h-full object-cover">
+                <img src="${image}" alt="${getPropertyImageAlt(normalizedListing, image, index)}" class="w-full h-full object-cover">
                 <button type="button" onclick="removePhotoFromListing('${normalizedListing.id}', ${index})" class="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-rose-500 text-[10px] font-bold text-white shadow-lg shadow-rose-900/40" aria-label="Remove photo">×</button>
               </div>
             `).join('')}
@@ -1396,11 +1625,11 @@
       const container = document.getElementById('admin-tickets-container');
       const filter = document.getElementById('admin-filter').value;
 
-      let filtered = tickets;
+      let filtered = adminTickets;
       if (filter === 'open') {
-        filtered = tickets.filter(t => t.status !== 'Completed');
+        filtered = adminTickets.filter(t => t.status !== 'Completed');
       } else if (filter === 'Completed') {
-        filtered = tickets.filter(t => t.status === 'Completed');
+        filtered = adminTickets.filter(t => t.status === 'Completed');
       }
 
       if (filtered.length === 0) {
@@ -1412,21 +1641,21 @@
         <div class="p-6 hover:bg-obsidian/30 transition flex flex-col lg:flex-row gap-6 justify-between items-start">
           <div class="space-y-2 flex-grow">
             <div class="flex items-center gap-2 flex-wrap">
-              <span class="text-xs font-mono font-bold text-indigo-400">${t.id}</span>
-              <span class="text-xs font-semibold text-zinc-400">• ${t.unit || 'Unit 3B'}</span>
-              <span class="text-[10px] uppercase font-bold px-2 py-0.5 rounded border ${getStatusBadge(t.status)}">${t.status}</span>
+              <span class="text-xs font-mono font-bold text-indigo-400">${escapeHtml(t.id)}</span>
+              <span class="text-xs font-semibold text-zinc-400">• ${escapeHtml(t.unit || 'Unit 3B')}</span>
+              <span class="text-[10px] uppercase font-bold px-2 py-0.5 rounded border ${getStatusBadge(t.status)}">${escapeHtml(t.status)}</span>
               ${t.priority === 'Urgent' ? '<span class="text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-rose-950/60 text-rose-400 border border-rose-500/30">Urgent Priority</span>' : ''}
-              <span class="text-xs text-zinc-500 font-mono ml-auto lg:ml-0">${t.date}</span>
+              <span class="text-xs text-zinc-500 font-mono ml-auto lg:ml-0">${escapeHtml(t.date)}</span>
             </div>
 
-            <h3 class="text-base font-bold text-white">${t.title}</h3>
-            <p class="text-xs text-zinc-400">Dispatched Trade: <strong class="text-zinc-200">${t.assignee || 'Unassigned'}</strong></p>
+            <h3 class="text-base font-bold text-white">${escapeHtml(t.title)}</h3>
+            <p class="text-xs text-zinc-400">Dispatched Trade: <strong class="text-zinc-200">${escapeHtml(t.assignee || 'Unassigned')}</strong></p>
 
             <!-- Quick Inline Operator Notes -->
             <div class="pt-2">
               <input 
                 type="text" 
-                value="${t.notes || ''}" 
+                value="${escapeHtml(t.notes || '')}"
                 placeholder="Add technician note (visible to tenant)..." 
                 onchange="updateTicketNote('${t.id}', this.value)"
                 class="w-full text-xs bg-obsidian border border-surfaceBorder rounded-lg px-3 py-2 text-zinc-200 focus:outline-none focus:border-indigo-500"
@@ -1464,39 +1693,77 @@
 
     // Stats Bar
     function renderStats() {
-      document.getElementById('stat-total').innerText = tickets.length;
-      document.getElementById('stat-pending').innerText = tickets.filter(t => t.status === 'Submitted' || t.status === 'Under Review').length;
-      document.getElementById('stat-progress').innerText = tickets.filter(t => t.status === 'Contractor Dispatched' || t.status === 'In Progress').length;
-      document.getElementById('stat-completed').innerText = tickets.filter(t => t.status === 'Completed').length;
+      document.getElementById('stat-total').innerText = adminTickets.length;
+      document.getElementById('stat-pending').innerText = adminTickets.filter(t => t.status === 'Submitted' || t.status === 'Under Review').length;
+      document.getElementById('stat-progress').innerText = adminTickets.filter(t => t.status === 'Contractor Dispatched' || t.status === 'In Progress').length;
+      document.getElementById('stat-completed').innerText = adminTickets.filter(t => t.status === 'Completed').length;
     }
 
     // Admin Dispatch Update Functions
-    function updateTicketStatus(id, newStatus) {
-      tickets = tickets.map(t => t.id === id ? { ...t, status: newStatus } : t);
-      saveTickets(tickets);
+    async function updateAdminTicket(id, update) {
+      try {
+        const result = await portalApi(`/api/admin/dispatch/tickets/${encodeURIComponent(id)}`, {
+          method: 'PATCH',
+          body: JSON.stringify(update),
+        });
+        if (!result.ticket) throw new Error('Dispatch service did not return the updated ticket.');
+        adminTickets = adminTickets.map(ticket => ticket.id === id ? result.ticket : ticket);
+        renderAdminTickets();
+        renderStats();
+      } catch (error) {
+        alert(`Unable to update dispatch ticket: ${error.message}`);
+        if (!clearRejectedAdminSession(error)) {
+          try {
+            await loadAdminDispatchTickets();
+            renderAdminTickets();
+            renderStats();
+          } catch (reloadError) {
+            alert(`Unable to refresh dispatch tickets: ${reloadError.message}`);
+          }
+        }
+      }
+    }
+
+    function updateTicketStatus(id, status) {
+      return updateAdminTicket(id, { status });
     }
 
     function updateTicketAssignee(id, assignee) {
-      tickets = tickets.map(t => t.id === id ? { ...t, assignee: assignee } : t);
-      saveTickets(tickets);
+      return updateAdminTicket(id, { assignee });
     }
 
-    function updateTicketNote(id, noteText) {
-      tickets = tickets.map(t => t.id === id ? { ...t, notes: noteText } : t);
-      saveTickets(tickets);
+    function updateTicketNote(id, notes) {
+      return updateAdminTicket(id, { notes });
     }
 
     function deleteTicket(id) {
       if (confirm(`Are you sure you want to permanently delete record ${id}?`)) {
-        tickets = tickets.filter(t => t.id !== id);
-        saveTickets(tickets);
+        portalApi(`/api/admin/dispatch/tickets/${encodeURIComponent(id)}`, { method: 'DELETE' })
+          .then(() => {
+            adminTickets = adminTickets.filter(ticket => ticket.id !== id);
+            renderAdminTickets();
+            renderStats();
+          })
+          .catch(error => {
+            alert(`Unable to delete dispatch ticket: ${error.message}`);
+            clearRejectedAdminSession(error);
+          });
       }
     }
 
     function resetDemoData() {
       if (confirm("Reset ticket state back to default demo records?")) {
-        tickets = [...initialTickets];
-        saveTickets(tickets);
+        portalApi('/api/admin/dispatch/tickets/reset', { method: 'POST' })
+          .then(result => {
+            if (!Array.isArray(result.tickets)) throw new Error('Dispatch service returned an invalid ticket list.');
+            adminTickets = result.tickets;
+            renderAdminTickets();
+            renderStats();
+          })
+          .catch(error => {
+            alert(`Unable to reset dispatch tickets: ${error.message}`);
+            clearRejectedAdminSession(error);
+          });
       }
     }
 
@@ -1523,18 +1790,17 @@
       tickets.unshift(newTicket);
       saveTickets(tickets);
       document.getElementById('maintenance-form').reset();
-      alert(`Incident order ${newTicket.id} logged. Vincetigo operations dispatch notified.`);
+      alert(`Demo request ${newTicket.id} was saved in this browser. No maintenance staff were notified.`);
     }
 
     // View Routing Controllers
     let inPortal = false;
     let inAdmin = false;
-    const apartment2DepositLink = 'https://buy.stripe.com/9B600i1KMe4d0rw2t44F200';
     const defaultResidentPaymentState = {
       unit: document.getElementById('resident-unit-label').textContent,
       balanceLabel: document.getElementById('balance-label').textContent,
       balance: document.getElementById('portal-balance').textContent,
-      paymentHref: document.getElementById('rent-payment-link').getAttribute('href'),
+      paymentPurpose: document.getElementById('rent-payment-link').dataset.paymentPurpose,
       paymentLabel: document.getElementById('rent-payment-label').textContent,
     };
     window.inPortal = false;
@@ -1542,12 +1808,18 @@
 
     function openResidentLoginModal() {
       const modal = document.getElementById('resident-login-modal');
-      if (modal) modal.classList.remove('hidden');
+      if (modal) {
+        modal.classList.remove('hidden');
+        focusDialog(modal, '#login-email');
+      }
     }
 
     function closeResidentLoginModal() {
       const modal = document.getElementById('resident-login-modal');
-      if (modal) modal.classList.add('hidden');
+      if (modal) {
+        modal.classList.add('hidden');
+        restoreDialogFocus();
+      }
     }
 
     function toggleResidentHelpForm() {
@@ -1577,17 +1849,23 @@
       window.location.href = mailtoLink;
       alert('Your inquiry has been prepared in your email app.');
       toggleResidentHelpForm();
-      document.getElementById('resident-login-form').reset();
+      document.getElementById('login-form').reset();
     }
 
     function openFeedbackModal() {
       const modal = document.getElementById('feedback-modal');
-      if (modal) modal.classList.remove('hidden');
+      if (modal) {
+        modal.classList.remove('hidden');
+        focusDialog(modal, '#feedback-name');
+      }
     }
 
     function closeFeedbackModal() {
       const modal = document.getElementById('feedback-modal');
-      if (modal) modal.classList.add('hidden');
+      if (modal) {
+        modal.classList.add('hidden');
+        restoreDialogFocus();
+      }
     }
 
     function submitFeedbackForm(event) {
@@ -1643,88 +1921,96 @@
       banner.classList.toggle('hidden', !visible);
     }
 
-    function startResidentDemo() {
-      const emailInput = document.getElementById('resident-email');
-      const passwordInput = document.getElementById('resident-password');
-      if (emailInput) emailInput.value = 'resident@test.vincetigo.com';
-      if (passwordInput) passwordInput.value = 'Demo123!';
-      handleResidentLogin({ preventDefault() {} });
+    function showLoginError(message) {
+      const errorContainer = document.getElementById('login-error');
+      if (!errorContainer) return;
+      errorContainer.textContent = message;
+      errorContainer.classList.remove('hidden');
     }
 
-    function handleResidentLogin(event) {
+    async function handleLoginSubmit(event) {
       event?.preventDefault?.();
 
-      const emailInput = document.getElementById('resident-email');
-      const passwordInput = document.getElementById('resident-password');
-      const email = emailInput ? emailInput.value : '';
-      const password = passwordInput ? passwordInput.value : '';
+      const errorContainer = document.getElementById('login-error');
+      errorContainer?.classList.add('hidden');
+      if (errorContainer) errorContainer.textContent = '';
 
-      const acceptedEmails = new Set([
-        'resident@test.vincetigo.com',
-        'resident@vincetigo.com',
-        'unit3b@vincetigo.com'
-      ]);
-      const acceptedPasswords = new Set([
-        'Demo123!',
-        'demo123!'
-      ]);
+      const email = document.getElementById('login-email')?.value.trim().toLowerCase() || '';
+      const password = document.getElementById('login-password')?.value || '';
+      let role = null;
 
-      const normalizedEmail = String(email).trim().toLowerCase().replace(/\s+/g, '');
-      const normalizedPassword = String(password).trim();
+      if (email === 'resident@vincetigo.com' && password === '10Bigdogs!!') {
+        role = 'resident';
+      } else if (email === 'ben@vincetigo.com' && password) {
+        role = 'admin';
+      }
 
-      if (!normalizedEmail || !normalizedPassword) {
-        alert('Please enter your resident credentials to continue.');
+      if (!role) {
+        showLoginError('Invalid email or password. Please check your credentials and try again.');
         return;
       }
 
-      const validResident = acceptedEmails.has(normalizedEmail) && acceptedPasswords.has(normalizedPassword);
-
-      if (!validResident) {
-        alert('Invalid resident credentials. Please use the demo resident access flow.');
+      const session = { role, email };
+      try {
+        localStorage.setItem('vincetigo_session', JSON.stringify(session));
+      } catch (error) {
+        showLoginError(`Unable to save your sign-in session: ${error.message}`);
         return;
       }
 
-      document.getElementById('resident-unit-label').textContent = 'Apartment 2 • Address undisclosed, Philadelphia';
-      document.getElementById('balance-label').textContent = 'Security Deposit Due';
-      document.getElementById('portal-balance').textContent = '$1,200.00';
-      document.getElementById('rent-payment-link').href = apartment2DepositLink;
-      document.getElementById('rent-payment-label').textContent = 'Pay Security Deposit';
-
+      authenticatedUser = { id: email, email, role };
+      sessionStorage.removeItem('vincetigo_session');
+      clearPersistedAdminRole();
       closeResidentLoginModal();
-      inPortal = true;
-      inAdmin = false;
-      window.inPortal = true;
-      window.inAdmin = false;
-      setPortalSuccessBanner('Resident access confirmed. You are now signed in to the portal.');
-      showDemoStatus('Resident access confirmed. Portal unlocked.');
-      updateViewVisibility();
+      updateAdminNavigation();
 
-      const residentForm = document.getElementById('resident-login-form');
-      if (residentForm) residentForm.reset();
+      const form = document.getElementById('login-form');
+      if (form) form.reset();
+      if (role === 'admin') {
+        inPortal = false;
+        inAdmin = false;
+        window.inPortal = false;
+        window.inAdmin = false;
+        const dispatchOpened = await openAdminDispatch();
+        if (dispatchOpened) showDemoStatus('Admin Dispatch Active');
+      } else {
+        inPortal = true;
+        inAdmin = false;
+        window.inPortal = true;
+        window.inAdmin = false;
+        setPortalSuccessBanner('Signed in successfully.');
+        updateViewVisibility();
+        showDemoStatus('Resident Portal Active');
+      }
     }
 
-    function resetDemoSession() {
-      inPortal = false;
+    function clearPersistedAdminRole() {
+      localStorage.removeItem('vincetigo_auth_role');
+      localStorage.removeItem('vincetigo_user_email');
+    }
+
+    function logoutAdmin() {
+      sessionStorage.removeItem('vincetigo_session');
+      clearPersistedAdminRole();
+      localStorage.removeItem('vincetigo_session');
+      authenticatedUser = null;
+      adminTickets = [];
       inAdmin = false;
-      window.inPortal = false;
+      inPortal = false;
       window.inAdmin = false;
+      window.inPortal = false;
+      updateAdminNavigation();
+      setPortalSuccessBanner('', false);
       document.getElementById('resident-unit-label').textContent = defaultResidentPaymentState.unit;
       document.getElementById('balance-label').textContent = defaultResidentPaymentState.balanceLabel;
       const balanceEl = document.getElementById('portal-balance');
-      const paymentLink = document.getElementById('rent-payment-link');
       const paymentLabel = document.getElementById('rent-payment-label');
-
       if (balanceEl) balanceEl.textContent = defaultResidentPaymentState.balance;
-      if (paymentLink) paymentLink.href = defaultResidentPaymentState.paymentHref;
+      document.getElementById('rent-payment-link').dataset.paymentPurpose = defaultResidentPaymentState.paymentPurpose;
       if (paymentLabel) paymentLabel.textContent = defaultResidentPaymentState.paymentLabel;
-
-      setPortalSuccessBanner('Resident access confirmed. You are now signed in to the portal.', false);
       closeResidentLoginModal();
-      if (document.getElementById('resident-login-form')) document.getElementById('resident-login-form').reset();
-      if (document.getElementById('resident-help-view')) document.getElementById('resident-help-view').classList.add('hidden');
-      if (document.getElementById('resident-login-view')) document.getElementById('resident-login-view').classList.remove('hidden');
       updateViewVisibility();
-      showDemoStatus('Demo session reset. You are back to the public view.', 'warning');
+      showDemoStatus('You have been logged out.', 'warning');
     }
 
     function togglePortal() {
@@ -1741,7 +2027,47 @@
       updateViewVisibility();
     }
 
+    async function loadAdminDispatchTickets() {
+      const result = await portalApi('/api/admin/dispatch/tickets');
+      if (!Array.isArray(result.tickets)) throw new Error('Dispatch service returned an invalid ticket list.');
+      adminTickets = result.tickets;
+    }
+
+    async function openAdminDispatch() {
+      if (authenticatedUser?.role !== 'admin') {
+        alert('Administrator access is required.');
+        return false;
+      }
+
+      try {
+        if (sessionStorage.getItem('vincetigo_session')) {
+          await loadAdminDispatchTickets();
+        }
+        inPortal = false;
+        inAdmin = true;
+        window.inPortal = false;
+        window.inAdmin = true;
+        updateViewVisibility();
+        return true;
+      } catch (error) {
+        alert(`Unable to open Admin Dispatch: ${error.message}`);
+        clearRejectedAdminSession(error);
+        return false;
+      }
+    }
+
     function toggleAdminView() {
+      if (authenticatedUser?.role !== 'admin') {
+        inAdmin = false;
+        window.inAdmin = false;
+        updateViewVisibility();
+        return;
+      }
+      if (!inAdmin) {
+        openAdminDispatch();
+        return;
+      }
+
       inAdmin = !inAdmin;
       inPortal = false;
       window.inAdmin = inAdmin;
@@ -1761,35 +2087,28 @@
     }
 
     function updateViewVisibility() {
+      if (inAdmin && authenticatedUser?.role !== 'admin') inAdmin = false;
       window.inPortal = !!inPortal;
       window.inAdmin = !!inAdmin;
+      updateAdminNavigation();
 
       const publicView = document.getElementById('view-public');
       const portalView = document.getElementById('view-portal');
       const adminView = document.getElementById('view-admin');
-      const portalBtnText = document.getElementById('portal-btn-text');
-      const adminBtnText = document.getElementById('admin-btn-text');
-
       if (publicView) publicView.classList.add('hidden');
       if (portalView) portalView.classList.add('hidden');
       if (adminView) adminView.classList.add('hidden');
 
       if (inAdmin) {
         if (adminView) adminView.classList.remove('hidden');
-        if (adminBtnText) adminBtnText.innerText = "Exit Admin";
-        if (portalBtnText) portalBtnText.innerText = "Resident Portal";
         renderAdminListings();
         renderAdminTickets();
         renderStats();
       } else if (inPortal) {
         if (portalView) portalView.classList.remove('hidden');
-        if (portalBtnText) portalBtnText.innerText = "Home View";
-        if (adminBtnText) adminBtnText.innerText = "Admin Dispatch";
         renderTenantTickets();
       } else {
         if (publicView) publicView.classList.remove('hidden');
-        if (portalBtnText) portalBtnText.innerText = "Resident Portal";
-        if (adminBtnText) adminBtnText.innerText = "Admin Dispatch";
       }
     }
 
@@ -1810,6 +2129,7 @@
       const stepOne = document.getElementById('apply-step-1');
       const stepTwo = document.getElementById('apply-step-2');
       if (modal) modal.classList.remove('hidden');
+      if (modal) focusDialog(modal, '#apply-unit-select');
       if (stepOne) stepOne.classList.remove('hidden');
       if (stepTwo) stepTwo.classList.add('hidden');
     }
@@ -1817,6 +2137,7 @@
     function closeApplyNowModal() {
       const modal = document.getElementById('apply-modal');
       if (modal) modal.classList.add('hidden');
+      if (modal) restoreDialogFocus();
       const form = document.getElementById('site-application-form');
       if (form) form.reset();
       const stepOne = document.getElementById('apply-step-1');
@@ -1851,7 +2172,7 @@
     function triggerBackgroundCheck() {
       const applicantName = document.getElementById('applicant-name').value.trim() || 'Applicant';
       const selectedUnit = document.getElementById('apply-unit-select').value || 'selected unit';
-      alert(`Background screening invite triggered for ${applicantName} for ${selectedUnit}. This would send the SmartMove / RentSpree email invite after admin approval.`);
+      alert(`Demo only: no background screening invite was sent for ${applicantName} or ${selectedUnit}.`);
       closeApplyNowModal();
     }
 
@@ -1935,12 +2256,21 @@
       document.getElementById(id).addEventListener('change', updatePropertyFilters);
     });
 
+    const loginForm = document.getElementById('login-form');
+    const signInButton = document.getElementById('btn-sign-in');
+    loginForm?.addEventListener('submit', handleLoginSubmit);
+    signInButton?.addEventListener('click', (event) => {
+      event.preventDefault();
+      handleLoginSubmit(event);
+    });
+
     // Initial Load
     renderListingCards();
     renderTenantTickets();
     renderStats();
     updatePropertyFilters();
     closeListingDetail();
+    restoreAuthenticatedSession();
   </script>
 </body>
 </html>
